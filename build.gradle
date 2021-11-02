@@ -1,0 +1,132 @@
+plugins {
+    id('java-library')
+    id('maven-publish')
+    id('signing')
+}
+
+group = 'io.github.jbock-java'
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
+compileJava {
+    options.encoding = 'UTF-8'
+    sourceCompatibility = '11'
+    targetCompatibility = '11'
+    options.compilerArgs << '--release'
+    options.compilerArgs << '11'
+}
+
+javadoc {
+    options.encoding = 'UTF-8'
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://s01.oss.sonatype.org/content/repositories/iogithubjbock-java-1097' }
+}
+
+tasks.withType(AbstractArchiveTask) {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+tasks.withType(GenerateModuleMetadata) {
+    enabled = true
+}
+
+dependencies {
+    api('junit:junit:4.13.2')
+    api('com.google.truth:truth:1.1.3')
+    api('com.google.truth.extensions:truth-java8-extension:1.1.3')
+    implementation('com.google.auto.value:auto-value:1.8.2')
+    api('io.github.jbock-java:auto-common:0.91')
+}
+
+jar {
+    manifest {
+        attributes(
+                'Implementation-Version': project.properties['version']
+        )
+    }
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events('failed')
+    }
+}
+
+task javadocJar(type: Jar) {
+    from javadoc
+    archiveClassifier.set('javadoc')
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allJava
+    archiveClassifier.set('sources')
+}
+
+artifacts {
+    archives(javadocJar, sourcesJar)
+}
+
+// https://central.sonatype.org/pages/gradle.html
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'compile-testing'
+            from components.java
+
+            artifact sourcesJar
+            artifact javadocJar
+
+            pom {
+                name = 'Compile Testing'
+                packaging = 'jar'
+                description = 'Utilities for testing compilation.'
+                url = 'https://github.com/jbock-java/compile-testing'
+
+                licenses {
+                    license {
+                        name = 'Apache 2.0'
+                        url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'Various'
+                        name = 'Various'
+                        email = 'jbock-java@gmx.de'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:https://github.com/jbock-java/compile-testing.git'
+                    developerConnection = 'scm:git:https://github.com/jbock-java/compile-testing.git'
+                    url = 'https://github.com/jbock-java/compile-testing'
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            url = 'https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/'
+            credentials {
+                username = System.getenv('OSS_USER')
+                password = System.getenv('OSS_PASS')
+            }
+        }
+    }
+}
+
+// https://docs.gradle.org/current/userguide/signing_plugin.html
+signing {
+    def signingKey = findProperty('signingKey')
+    def signingPassword = findProperty('signingPassword')
+    useInMemoryPgpKeys(signingKey, signingPassword)
+    sign publishing.publications.mavenJava
+}

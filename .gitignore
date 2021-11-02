@@ -1,7 +1,7 @@
 .classpath
-.factorypath
 .project
 .settings
+.checkstyle
 eclipsebin
 
 bin
@@ -11,7 +11,6 @@ out
 lib
 
 target
-*.class
 pom.xml.*
 release.properties
 
@@ -22,4 +21,5 @@ classes
 obj
 
 .DS_Store
-*~
+
+.gradle
