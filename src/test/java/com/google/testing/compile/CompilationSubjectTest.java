@@ -805,25 +805,6 @@ public class CompilationSubjectTest {
         public final ExpectFailure expectFailure = new ExpectFailure();
 
         @Test
-        public void generatedSourceFile() {
-            assertThat(compilerWithGenerator().compile(HELLO_WORLD_RESOURCE))
-                    .generatedSourceFile(GeneratingProcessor.GENERATED_CLASS_NAME)
-                    .hasSourceEquivalentTo(
-                            JavaFileObjects.forSourceString(
-                                    GeneratingProcessor.GENERATED_CLASS_NAME, GeneratingProcessor.GENERATED_SOURCE));
-        }
-
-        @Test
-        public void generatedSourceFile_packageInfo() {
-            GeneratingProcessor generatingProcessor = new GeneratingProcessor("test");
-            assertThat(javac().withProcessors(generatingProcessor).compile(HELLO_WORLD_RESOURCE))
-                    .generatedSourceFile("test.package-info")
-                    .hasSourceEquivalentTo(
-                            JavaFileObjects.forSourceString(
-                                    "test.package-info", generatingProcessor.generatedPackageInfoSource()));
-        }
-
-        @Test
         public void generatedSourceFile_fail() {
             expectFailure
                     .whenTesting()

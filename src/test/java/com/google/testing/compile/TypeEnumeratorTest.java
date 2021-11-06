@@ -15,7 +15,6 @@
  */
 package com.google.testing.compile;
 
-import com.sun.source.tree.CompilationUnitTree;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -27,111 +26,6 @@ import static com.google.common.truth.Truth.assertThat;
  */
 @RunWith(JUnit4.class)
 public class TypeEnumeratorTest {
-    @Test
-    public void getTopLevelTypes_singleQualifiedType() {
-        CompilationUnitTree compilation = MoreTrees.parseLinesToTree(
-                "package path.to.test;",
-                "import java.util.List;",
-                "",
-                "public class HelloWorld {",
-                "  public static void main(String[] args) {",
-                "    System.out.println(\"Hello World!\");",
-                "  }",
-                "}");
-
-        assertThat(TypeEnumerator.getTopLevelTypes(compilation))
-                .containsExactly("path.to.test.HelloWorld");
-    }
-
-    @Test
-    public void getTopLevelTypes_manyQualifiedTypes() {
-        CompilationUnitTree compilation = MoreTrees.parseLinesToTree(
-                "package path.to.test;",
-                "import java.util.List;",
-                "",
-                "public class HelloWorld {",
-                "  public static void main(String[] args) {",
-                "    System.out.println(\"Hello World!\");",
-                "  }",
-                "}",
-                "",
-                "final class HelperWorld {}");
-
-        assertThat(TypeEnumerator.getTopLevelTypes(compilation)).containsExactly(
-                "path.to.test.HelloWorld", "path.to.test.HelperWorld");
-    }
-
-    @Test
-    public void getTopLevelTypes_singleSimpleTypes() {
-        CompilationUnitTree compilation = MoreTrees.parseLinesToTree(
-                "import java.util.List;",
-                "",
-                "public class HelloWorld {",
-                "  public static void main(String[] args) {",
-                "    System.out.println(\"Hello World!\");",
-                "  }",
-                "}");
-
-        assertThat(TypeEnumerator.getTopLevelTypes(compilation)).containsExactly("HelloWorld");
-    }
-
-    @Test
-    public void getTopLevelTypes_manySimpleTypes() {
-        CompilationUnitTree compilation = MoreTrees.parseLinesToTree(
-                "import java.util.List;",
-                "",
-                "public class HelloWorld {",
-                "  public static void main(String[] args) {",
-                "    System.out.println(\"Hello World!\");",
-                "  }",
-                "}",
-                "",
-                "final class HelperWorld {}");
-
-        assertThat(TypeEnumerator.getTopLevelTypes(compilation)).containsExactly(
-                "HelloWorld", "HelperWorld");
-    }
-
-    @Test
-    public void getTopLevelTypes_worksForAnnotationTypes() {
-        CompilationUnitTree compilation = MoreTrees.parseLinesToTree(
-                "package path.to.test;",
-                "import java.util.List;",
-                "",
-                "public @interface HelloWorld {}");
-
-        assertThat(TypeEnumerator.getTopLevelTypes(compilation))
-                .containsExactly("path.to.test.HelloWorld");
-    }
-
-    @Test
-    public void getTopLevelTypes_worksForEnums() {
-        CompilationUnitTree compilation = MoreTrees.parseLinesToTree(
-                "package path.to.test;",
-                "import java.util.List;",
-                "",
-                "public enum HelloWorld {",
-                "  HELLO,",
-                "  WORLD;",
-                "}");
-
-        assertThat(TypeEnumerator.getTopLevelTypes(compilation))
-                .containsExactly("path.to.test.HelloWorld");
-    }
-
-    @Test
-    public void getTopLevelTypes_worksForInterfaces() {
-        CompilationUnitTree compilation = MoreTrees.parseLinesToTree(
-                "package path.to.test;",
-                "import java.util.List;",
-                "",
-                "public interface HelloWorld {",
-                "  public String getSalutation();",
-                "}");
-
-        assertThat(TypeEnumerator.getTopLevelTypes(compilation))
-                .containsExactly("path.to.test.HelloWorld");
-    }
 
     @Test
     public void getTopLevelTypes_worksForNull() {

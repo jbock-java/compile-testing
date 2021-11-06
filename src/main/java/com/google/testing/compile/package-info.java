@@ -21,8 +21,6 @@
  * projects.
  *
  * <ul>
- *   <li>{@link Compiler} lets you choose command-line options, annotation processors, and source
- *       files to compile.
  *   <li>{@link Compilation} represents the immutable result of compiling source files: diagnostics
  *       and generated files.
  *   <li>{@link CompilationSubject} lets you make assertions about {@link Compilation} objects.
@@ -82,6 +80,5 @@
  *     .atColumn(5);
  * </pre>
  */
-@CheckReturnValue
 package com.google.testing.compile;
 

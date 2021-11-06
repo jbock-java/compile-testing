@@ -2,13 +2,11 @@ package com.google.testing.compile;
 
 import com.google.common.collect.ImmutableList;
 
-import javax.annotation.processing.Generated;
 import javax.annotation.processing.Processor;
 import javax.tools.JavaCompiler;
 import java.io.File;
 import java.util.Optional;
 
-@Generated("com.google.auto.value.processor.AutoValueProcessor")
 final class AutoValue_Compiler extends Compiler {
 
     private final JavaCompiler javaCompiler;

@@ -23,7 +23,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import javax.tools.JavaFileObject;
-import java.io.IOException;
 
 import static com.google.common.truth.ExpectFailure.assertThat;
 import static com.google.common.truth.Truth.assertThat;
@@ -103,57 +102,6 @@ public final class JavaFileObjectSubjectTest {
         assertThat(expected).factValue("expected to contain a match for").isEqualTo("bad+");
     }
 
-    @Test
-    public void hasSourceEquivalentTo() {
-        assertThat(CLASS_WITH_FIELD).hasSourceEquivalentTo(CLASS_WITH_FIELD);
-    }
-
-    @Test
-    public void hasSourceEquivalentTo_unresolvedReferences() {
-        assertThat(UNKNOWN_TYPES).hasSourceEquivalentTo(UNKNOWN_TYPES);
-    }
-
-    @Test
-    public void hasSourceEquivalentTo_failOnDifferences() throws IOException {
-        expectFailure
-                .whenTesting()
-                .about(javaFileObjects())
-                .that(CLASS)
-                .hasSourceEquivalentTo(DIFFERENT_NAME);
-        AssertionError expected = expectFailure.getFailure();
-        assertThat(expected).factKeys().contains("expected to be equivalent to");
-        assertThat(expected.getMessage()).contains(CLASS.getName());
-        assertThat(expected).factValue("but was").isEqualTo(CLASS.getCharContent(false));
-    }
-
-    @Test
-    public void hasSourceEquivalentTo_failOnExtraInExpected() throws IOException {
-        expectFailure
-                .whenTesting()
-                .about(javaFileObjects())
-                .that(CLASS)
-                .hasSourceEquivalentTo(CLASS_WITH_FIELD);
-        AssertionError expected = expectFailure.getFailure();
-        assertThat(expected).factKeys().contains("expected to be equivalent to");
-        assertThat(expected.getMessage()).contains("unmatched nodes in the expected tree");
-        assertThat(expected.getMessage()).contains(CLASS.getName());
-        assertThat(expected).factValue("but was").isEqualTo(CLASS.getCharContent(false));
-    }
-
-    @Test
-    public void hasSourceEquivalentTo_failOnExtraInActual() throws IOException {
-        expectFailure
-                .whenTesting()
-                .about(javaFileObjects())
-                .that(CLASS_WITH_FIELD)
-                .hasSourceEquivalentTo(CLASS);
-        AssertionError expected = expectFailure.getFailure();
-        assertThat(expected).factKeys().contains("expected to be equivalent to");
-        assertThat(expected.getMessage()).contains("unmatched nodes in the actual tree");
-        assertThat(expected.getMessage()).contains(CLASS_WITH_FIELD.getName());
-        assertThat(expected).factValue("but was").isEqualTo(CLASS_WITH_FIELD.getCharContent(false));
-    }
-
     private static final JavaFileObject SAMPLE_ACTUAL_FILE_FOR_MATCHING =
             JavaFileObjects.forSourceLines(
                     "test.SomeFile",
@@ -193,9 +141,4 @@ public final class JavaFileObjectSubjectTest {
                     "    }",
                     "  }",
                     "}");
-
-    @Test
-    public void containsElementsIn_completeMatch() {
-        assertThat(SAMPLE_ACTUAL_FILE_FOR_MATCHING).containsElementsIn(SAMPLE_ACTUAL_FILE_FOR_MATCHING);
-    }
 }

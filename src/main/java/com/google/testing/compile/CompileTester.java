@@ -31,11 +31,6 @@ import java.nio.charset.Charset;
  * @author Gregory Kick
  */
 public interface CompileTester {
-    /**
-     * The clause in the fluent API that tests that the code parses equivalently to the specified
-     * code.
-     */
-    void parsesAs(JavaFileObject first, JavaFileObject... rest);
 
     /** The clause in the fluent API that tests for successful compilation without errors. */
     SuccessfulCompilationClause compilesWithoutError();
@@ -133,13 +128,6 @@ public interface CompileTester {
      * @param T the non-generic clause type implementing this interface
      */
     public interface GeneratedPredicateClause<T> {
-        /**
-         * Checks that a source file with an equivalent
-         * <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">AST</a> was generated for each of
-         * the given {@linkplain JavaFileObject files}.
-         */
-        T generatesSources(JavaFileObject first, JavaFileObject... rest);
-
         /**
          * Checks that a file with equivalent kind and content was generated for each of the given
          * {@linkplain JavaFileObject files}.

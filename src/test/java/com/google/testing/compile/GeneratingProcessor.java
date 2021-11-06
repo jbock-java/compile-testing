@@ -17,7 +17,6 @@
 package com.google.testing.compile;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.errorprone.annotations.CanIgnoreReturnValue;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
@@ -80,7 +79,6 @@ final class GeneratingProcessor extends AbstractProcessor {
         return "package " + packageName + ";\n";
     }
 
-    @CanIgnoreReturnValue
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         return false;

@@ -3,9 +3,6 @@ package com.google.testing.compile;
 import com.google.common.collect.ImmutableSet;
 import com.sun.source.tree.CompilationUnitTree;
 
-import javax.annotation.processing.Generated;
-
-@Generated("com.google.auto.value.processor.AutoValueProcessor")
 final class AutoValue_JavaSourcesSubject_TypedCompilationUnit extends JavaSourcesSubject.TypedCompilationUnit {
 
     private final CompilationUnitTree tree;

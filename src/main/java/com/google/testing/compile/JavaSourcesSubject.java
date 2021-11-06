@@ -17,23 +17,18 @@ package com.google.testing.compile;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.io.ByteSource;
 import com.google.common.truth.FailureMetadata;
 import com.google.common.truth.Subject;
 import com.google.testing.compile.CompilationSubject.DiagnosticAtColumn;
 import com.google.testing.compile.CompilationSubject.DiagnosticInFile;
 import com.google.testing.compile.CompilationSubject.DiagnosticOnLine;
-import com.google.testing.compile.Parser.ParseResult;
 import com.sun.source.tree.CompilationUnitTree;
 
 import javax.annotation.processing.Processor;
-import javax.tools.Diagnostic;
-import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import java.io.File;
@@ -42,7 +37,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collector;
 
 import static com.google.common.truth.Fact.simpleFact;
@@ -114,11 +108,6 @@ public final class JavaSourcesSubject extends Subject
     }
 
     @Override
-    public void parsesAs(JavaFileObject first, JavaFileObject... rest) {
-        new CompilationClause().parsesAs(first, rest);
-    }
-
-    @Override
     public SuccessfulCompilationClause compilesWithoutError() {
         return new CompilationClause().compilesWithoutError();
     }
@@ -143,66 +132,6 @@ public final class JavaSourcesSubject extends Subject
 
         private CompilationClause(Iterable<? extends Processor> processors) {
             this.processors = ImmutableSet.copyOf(processors);
-        }
-
-        @Override
-        public void parsesAs(JavaFileObject first, JavaFileObject... rest) {
-            if (Iterables.isEmpty(actual)) {
-                failWithoutActual(
-                        simpleFact(
-                                "Compilation generated no additional source files, though some were expected."));
-                return;
-            }
-            ParseResult actualResult = Parser.parse(actual);
-            ImmutableList<Diagnostic<? extends JavaFileObject>> errors =
-                    actualResult.diagnosticsByKind().get(Kind.ERROR);
-            if (!errors.isEmpty()) {
-                StringBuilder message = new StringBuilder("Parsing produced the following errors:\n");
-                for (Diagnostic<? extends JavaFileObject> error : errors) {
-                    message.append('\n');
-                    message.append(error);
-                }
-                failWithoutActual(simpleFact(message.toString()));
-                return;
-            }
-            ParseResult expectedResult = Parser.parse(Lists.asList(first, rest));
-            ImmutableList<TypedCompilationUnit> actualTrees =
-                    actualResult.compilationUnits().stream()
-                            .map(TypedCompilationUnit::create)
-                            .collect(toImmutableList());
-            ImmutableList<TypedCompilationUnit> expectedTrees =
-                    expectedResult.compilationUnits().stream()
-                            .map(TypedCompilationUnit::create)
-                            .collect(toImmutableList());
-
-            ImmutableMap<TypedCompilationUnit, Optional<TypedCompilationUnit>> matchedTrees =
-                    Maps.toMap(
-                            expectedTrees,
-                            expectedTree ->
-                                    actualTrees.stream()
-                                            .filter(actualTree -> expectedTree.types().equals(actualTree.types()))
-                                            .findFirst());
-
-            matchedTrees.forEach(
-                    (expectedTree, maybeActualTree) -> {
-                        if (!maybeActualTree.isPresent()) {
-                            failNoCandidates(expectedTree.types(), expectedTree.tree(), actualTrees);
-                            return;
-                        }
-                        TypedCompilationUnit actualTree = maybeActualTree.get();
-                        TreeDifference treeDifference =
-                                TreeDiffer.diffCompilationUnits(expectedTree.tree(), actualTree.tree());
-                        if (!treeDifference.isEmpty()) {
-                            String diffReport =
-                                    treeDifference.getDiffReport(
-                                            new TreeContext(expectedTree.tree(), expectedResult.trees()),
-                                            new TreeContext(actualTree.tree(), actualResult.trees()));
-                            failWithCandidate(
-                                    expectedTree.tree().getSourceFile(),
-                                    actualTree.tree().getSourceFile(),
-                                    diffReport);
-                        }
-                    });
         }
 
         /** Called when the {@code generatesSources()} verb fails with no diff candidates. */
@@ -447,15 +376,6 @@ public final class JavaSourcesSubject extends Subject
         }
 
         @Override
-        public T generatesSources(JavaFileObject first, JavaFileObject... rest) {
-            check("generatedSourceFiles()")
-                    .about(javaSources())
-                    .that(compilation.generatedSourceFiles())
-                    .parsesAs(first, rest);
-            return thisObject();
-        }
-
-        @Override
         public T generatesFiles(JavaFileObject first, JavaFileObject... rest) {
             for (JavaFileObject expected : Lists.asList(first, rest)) {
                 if (!wasGenerated(expected)) {
@@ -633,11 +553,6 @@ public final class JavaSourcesSubject extends Subject
         @Override
         public UnsuccessfulCompilationClause failsToCompile() {
             return delegate.failsToCompile();
-        }
-
-        @Override
-        public void parsesAs(JavaFileObject first, JavaFileObject... rest) {
-            delegate.parsesAs(first, rest);
         }
     }
 }
