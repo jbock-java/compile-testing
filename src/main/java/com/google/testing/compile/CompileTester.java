@@ -46,8 +46,6 @@ public interface CompileTester {
 
     /**
      * The clause in the fluent API that allows for chaining test conditions.
-     *
-     * @param T the clause type returned by {@link #and()}
      */
     public interface ChainingClause<T> {
         T and();
@@ -55,8 +53,6 @@ public interface CompileTester {
 
     /**
      * The clause in the fluent API that checks notes in a compilation.
-     *
-     * @param T the non-generic clause type implementing this interface
      */
     public interface CompilationWithNotesClause<T> {
         /**
@@ -74,8 +70,6 @@ public interface CompileTester {
 
     /**
      * The clause in the fluent API that checks notes and warnings in a compilation.
-     *
-     * @param T the non-generic clause type implementing this interface
      */
     public interface CompilationWithWarningsClause<T> extends CompilationWithNotesClause<T> {
 
@@ -95,8 +89,6 @@ public interface CompileTester {
     /**
      * The clause in the fluent API that checks that a diagnostic is associated with a particular
      * {@link JavaFileObject}.
-     *
-     * @param T the clause type returned by {@link ChainingClause#and()}
      */
     public interface FileClause<T> extends ChainingClause<T> {
         LineClause<T> in(JavaFileObject file);
@@ -105,8 +97,6 @@ public interface CompileTester {
     /**
      * The clause in the fluent API that checks that a diagnostic is on a particular
      * {@linkplain Diagnostic#getLineNumber() line}.
-     *
-     * @param T the clause type returned by {@link ChainingClause#and()}
      */
     public interface LineClause<T> extends ChainingClause<T> {
         ColumnClause<T> onLine(long lineNumber);
@@ -115,8 +105,6 @@ public interface CompileTester {
     /**
      * The clause in the fluent API that checks that a diagnostic starts at a particular
      * {@linkplain Diagnostic#getColumnNumber() column}.
-     *
-     * @param T the clause type returned by {@link ChainingClause#and()}
      */
     public interface ColumnClause<T> extends ChainingClause<T> {
         ChainingClause<T> atColumn(long columnNumber);
@@ -124,8 +112,6 @@ public interface CompileTester {
 
     /**
      * The clause in the fluent API that checks that files were generated.
-     *
-     * @param T the non-generic clause type implementing this interface
      */
     public interface GeneratedPredicateClause<T> {
         /**
@@ -143,8 +129,6 @@ public interface CompileTester {
 
     /**
      * The clause in the fluent API that checks that a generated file has the specified contents.
-     *
-     * @param T the non-generic clause type implementing this interface
      */
     public interface SuccessfulFileClause<T> extends ChainingClause<GeneratedPredicateClause<T>> {
         /**
