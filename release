@@ -1,0 +1,29 @@
+#!/bin/bash
+set -e
+
+die () {
+    echo "$*"
+    exit 1
+}
+
+usage="Usage: release <version>"
+
+if [[ `git status --porcelain` ]]; then
+  die "dirty workspace"
+fi
+
+VERSION="$1"
+
+if [[ -z "$VERSION" ]]; then
+  die "$usage"
+fi
+
+git pull origin $(git rev-parse --abbrev-ref HEAD)
+./gradlew clean -Pversion=${VERSION} publish
+
+read -e -p "Upload successful. Also tag? [y/N]"
+if [[ "$REPLY" == [Yy]* ]]; then
+  git tag "v${VERSION}"
+  git push origin --tags
+fi
+
