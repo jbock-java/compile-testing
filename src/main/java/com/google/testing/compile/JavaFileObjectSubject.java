@@ -15,14 +15,6 @@
  */
 package com.google.testing.compile;
 
-import static com.google.common.collect.Iterables.getOnlyElement;
-import static com.google.common.truth.Fact.fact;
-import static com.google.common.truth.Truth.assertAbout;
-import static com.google.testing.compile.JavaFileObjects.asByteSource;
-import static com.google.testing.compile.TreeDiffer.diffCompilationUnits;
-import static com.google.testing.compile.TreeDiffer.matchCompilationUnits;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteSource;
 import com.google.common.truth.FailureMetadata;
@@ -30,11 +22,19 @@ import com.google.common.truth.StringSubject;
 import com.google.common.truth.Subject;
 import com.google.testing.compile.Parser.ParseResult;
 import com.sun.source.tree.CompilationUnitTree;
+
+import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.function.BiFunction;
-import javax.tools.JavaFileObject;
-import org.checkerframework.checker.nullness.qual.Nullable;
+
+import static com.google.common.collect.Iterables.getOnlyElement;
+import static com.google.common.truth.Fact.fact;
+import static com.google.common.truth.Truth.assertAbout;
+import static com.google.testing.compile.JavaFileObjects.asByteSource;
+import static com.google.testing.compile.TreeDiffer.diffCompilationUnits;
+import static com.google.testing.compile.TreeDiffer.matchCompilationUnits;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /** Assertions about {@link JavaFileObject}s. */
 public final class JavaFileObjectSubject extends Subject {
@@ -69,7 +69,7 @@ public final class JavaFileObjectSubject extends Subject {
    * uses {@link Object#equals(Object)}.
    */
   @Override
-  public void isEqualTo(@Nullable Object other) {
+  public void isEqualTo(Object other) {
     if (!(other instanceof JavaFileObject)) {
       super.isEqualTo(other);
       return;

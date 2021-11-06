@@ -15,14 +15,19 @@
  */
 package com.google.testing.compile;
 
-import static com.google.common.collect.MoreCollectors.toOptional;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteSource;
+
+import javax.tools.FileObject;
+import javax.tools.JavaFileObject;
+import javax.tools.JavaFileObject.Kind;
+import javax.tools.SimpleJavaFileObject;
+import javax.tools.StandardJavaFileManager;
+import javax.tools.StandardLocation;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -36,13 +41,8 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import javax.tools.FileObject;
-import javax.tools.JavaFileObject;
-import javax.tools.JavaFileObject.Kind;
-import javax.tools.SimpleJavaFileObject;
-import javax.tools.StandardJavaFileManager;
-import javax.tools.StandardLocation;
-import org.checkerframework.checker.nullness.qual.Nullable;
+
+import static com.google.common.collect.MoreCollectors.toOptional;
 
 /**
  * A file manager implementation that stores all output in memory.
@@ -91,7 +91,7 @@ final class InMemoryJavaFileManager extends ForwardingStandardJavaFileManager {
   }
 
   @Override
-  public @Nullable FileObject getFileForInput(
+  public FileObject getFileForInput(
       Location location, String packageName, String relativeName) throws IOException {
     if (location.isOutputLocation()) {
       return inMemoryOutputs.getIfPresent(uriForFileObject(location, packageName, relativeName));
@@ -104,7 +104,7 @@ final class InMemoryJavaFileManager extends ForwardingStandardJavaFileManager {
   }
 
   @Override
-  public @Nullable JavaFileObject getJavaFileForInput(
+  public JavaFileObject getJavaFileForInput(
       Location location, String className, Kind kind) throws IOException {
     if (location.isOutputLocation()) {
       return inMemoryOutputs.getIfPresent(uriForJavaFileObject(location, className, kind));

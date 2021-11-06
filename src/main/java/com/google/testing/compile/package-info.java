@@ -85,4 +85,3 @@
 @CheckReturnValue
 package com.google.testing.compile;
 
-import com.google.errorprone.annotations.CheckReturnValue;

@@ -15,16 +15,6 @@
  */
 package com.google.testing.compile;
 
-import static com.google.common.truth.Fact.simpleFact;
-import static com.google.common.truth.Truth.assertAbout;
-import static com.google.testing.compile.CompilationSubject.compilations;
-import static com.google.testing.compile.Compiler.javac;
-import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
-import static com.google.testing.compile.TypeEnumerator.getTopLevelTypes;
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toList;
-
-import com.google.auto.value.AutoValue;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -35,12 +25,17 @@ import com.google.common.collect.Maps;
 import com.google.common.io.ByteSource;
 import com.google.common.truth.FailureMetadata;
 import com.google.common.truth.Subject;
-import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.testing.compile.CompilationSubject.DiagnosticAtColumn;
 import com.google.testing.compile.CompilationSubject.DiagnosticInFile;
 import com.google.testing.compile.CompilationSubject.DiagnosticOnLine;
 import com.google.testing.compile.Parser.ParseResult;
 import com.sun.source.tree.CompilationUnitTree;
+
+import javax.annotation.processing.Processor;
+import javax.tools.Diagnostic;
+import javax.tools.Diagnostic.Kind;
+import javax.tools.JavaFileManager;
+import javax.tools.JavaFileObject;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -49,12 +44,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collector;
-import javax.annotation.processing.Processor;
-import javax.tools.Diagnostic;
-import javax.tools.Diagnostic.Kind;
-import javax.tools.JavaFileManager;
-import javax.tools.JavaFileObject;
-import org.checkerframework.checker.nullness.qual.Nullable;
+
+import static com.google.common.truth.Fact.simpleFact;
+import static com.google.common.truth.Truth.assertAbout;
+import static com.google.testing.compile.CompilationSubject.compilations;
+import static com.google.testing.compile.Compiler.javac;
+import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
+import static com.google.testing.compile.TypeEnumerator.getTopLevelTypes;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toList;
 
 /**
  * A <a href="https://github.com/truth0/truth">Truth</a> {@link Subject} that evaluates the result
@@ -67,8 +65,8 @@ public final class JavaSourcesSubject extends Subject
     implements CompileTester, ProcessedCompileTesterFactory {
   private final Iterable<? extends JavaFileObject> actual;
   private final List<String> options = new ArrayList<>(Arrays.asList("-Xlint"));
-  @Nullable private ClassLoader classLoader;
-  @Nullable private ImmutableList<File> classPath;
+  private ClassLoader classLoader;
+  private ImmutableList<File> classPath;
 
   JavaSourcesSubject(FailureMetadata failureMetadata, Iterable<? extends JavaFileObject> subject) {
     super(failureMetadata, subject);
@@ -120,19 +118,16 @@ public final class JavaSourcesSubject extends Subject
     new CompilationClause().parsesAs(first, rest);
   }
 
-  @CanIgnoreReturnValue
   @Override
   public SuccessfulCompilationClause compilesWithoutError() {
     return new CompilationClause().compilesWithoutError();
   }
 
-  @CanIgnoreReturnValue
   @Override
   public CleanCompilationClause compilesWithoutWarnings() {
     return new CompilationClause().compilesWithoutWarnings();
   }
 
-  @CanIgnoreReturnValue
   @Override
   public UnsuccessfulCompilationClause failsToCompile() {
     return new CompilationClause().failsToCompile();
@@ -280,24 +275,21 @@ public final class JavaSourcesSubject extends Subject
       }
     }
 
-    @CanIgnoreReturnValue
-    @Override
+      @Override
     public SuccessfulCompilationClause compilesWithoutError() {
       Compilation compilation = compilation();
       check("compilation()").about(compilations()).that(compilation).succeeded();
       return new SuccessfulCompilationBuilder(compilation);
     }
 
-    @CanIgnoreReturnValue
-    @Override
+      @Override
     public CleanCompilationClause compilesWithoutWarnings() {
       Compilation compilation = compilation();
       check("compilation()").about(compilations()).that(compilation).succeededWithoutWarnings();
       return new CleanCompilationBuilder(compilation);
     }
 
-    @CanIgnoreReturnValue
-    @Override
+      @Override
     public UnsuccessfulCompilationClause failsToCompile() {
       Compilation compilation = compilation();
       check("compilation()").about(compilations()).that(compilation).failed();
@@ -316,7 +308,6 @@ public final class JavaSourcesSubject extends Subject
     }
   }
 
-  @AutoValue
   abstract static class TypedCompilationUnit {
     abstract CompilationUnitTree tree();
 
@@ -348,15 +339,13 @@ public final class JavaSourcesSubject extends Subject
       this.compilation = compilation;
     }
 
-    @CanIgnoreReturnValue
-    @Override
+      @Override
     public T withNoteCount(int noteCount) {
       check("compilation()").about(compilations()).that(compilation).hadNoteCount(noteCount);
       return thisObject();
     }
 
-    @CanIgnoreReturnValue
-    @Override
+      @Override
     public FileClause<T> withNoteContaining(String messageFragment) {
       return new FileBuilder(
           check("compilation()")
@@ -365,15 +354,13 @@ public final class JavaSourcesSubject extends Subject
               .hadNoteContaining(messageFragment));
     }
 
-    @CanIgnoreReturnValue
-    @Override
+      @Override
     public T withWarningCount(int warningCount) {
       check("compilation()").about(compilations()).that(compilation).hadWarningCount(warningCount);
       return thisObject();
     }
 
-    @CanIgnoreReturnValue
-    @Override
+      @Override
     public FileClause<T> withWarningContaining(String messageFragment) {
       return new FileBuilder(
           check("compilation()")
@@ -382,14 +369,12 @@ public final class JavaSourcesSubject extends Subject
               .hadWarningContaining(messageFragment));
     }
 
-    @CanIgnoreReturnValue
-    public T withErrorCount(int errorCount) {
+      public T withErrorCount(int errorCount) {
       check("compilation()").about(compilations()).that(compilation).hadErrorCount(errorCount);
       return thisObject();
     }
 
-    @CanIgnoreReturnValue
-    public FileClause<T> withErrorContaining(String messageFragment) {
+      public FileClause<T> withErrorContaining(String messageFragment) {
       return new FileBuilder(
           check("compilation()")
               .about(compilations())
@@ -461,8 +446,7 @@ public final class JavaSourcesSubject extends Subject
       super(compilation);
     }
 
-    @CanIgnoreReturnValue
-    @Override
+      @Override
     public T generatesSources(JavaFileObject first, JavaFileObject... rest) {
       check("generatedSourceFiles()")
           .about(javaSources())
@@ -471,8 +455,7 @@ public final class JavaSourcesSubject extends Subject
       return thisObject();
     }
 
-    @CanIgnoreReturnValue
-    @Override
+      @Override
     public T generatesFiles(JavaFileObject first, JavaFileObject... rest) {
       for (JavaFileObject expected : Lists.asList(first, rest)) {
         if (!wasGenerated(expected)) {
@@ -498,8 +481,7 @@ public final class JavaSourcesSubject extends Subject
       return false;
     }
 
-    @CanIgnoreReturnValue
-    @Override
+      @Override
     public SuccessfulFileClause<T> generatesFileNamed(
         JavaFileManager.Location location, String packageName, String relativeName) {
       final JavaFileObjectSubject javaFileObjectSubject =
@@ -638,20 +620,17 @@ public final class JavaSourcesSubject extends Subject
       return delegate.newCompilationClause(processors);
     }
 
-    @CanIgnoreReturnValue
-    @Override
+      @Override
     public SuccessfulCompilationClause compilesWithoutError() {
       return delegate.compilesWithoutError();
     }
 
-    @CanIgnoreReturnValue
-    @Override
+      @Override
     public CleanCompilationClause compilesWithoutWarnings() {
       return delegate.compilesWithoutWarnings();
     }
 
-    @CanIgnoreReturnValue
-    @Override
+      @Override
     public UnsuccessfulCompilationClause failsToCompile() {
       return delegate.failsToCompile();
     }

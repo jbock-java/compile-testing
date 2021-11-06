@@ -15,15 +15,15 @@
  */
 package com.google.testing.compile;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static javax.tools.Diagnostic.NOPOS;
-
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.LineMap;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static javax.tools.Diagnostic.NOPOS;
 
 /**
  * A class for managing and retrieving contextual information for Compilation Trees.

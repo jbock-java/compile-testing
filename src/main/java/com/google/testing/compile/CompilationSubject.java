@@ -15,6 +15,29 @@
  */
 package com.google.testing.compile;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Streams;
+import com.google.common.truth.Fact;
+import com.google.common.truth.FailureMetadata;
+import com.google.common.truth.Subject;
+import com.google.common.truth.Truth;
+
+import javax.tools.Diagnostic;
+import javax.tools.JavaFileManager.Location;
+import javax.tools.JavaFileObject;
+import javax.tools.StandardLocation;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Predicates.notNull;
 import static com.google.common.collect.Iterables.size;
@@ -32,30 +55,6 @@ import static javax.tools.Diagnostic.Kind.ERROR;
 import static javax.tools.Diagnostic.Kind.MANDATORY_WARNING;
 import static javax.tools.Diagnostic.Kind.NOTE;
 import static javax.tools.Diagnostic.Kind.WARNING;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Streams;
-import com.google.common.truth.Fact;
-import com.google.common.truth.FailureMetadata;
-import com.google.common.truth.Subject;
-import com.google.common.truth.Truth;
-import com.google.errorprone.annotations.CanIgnoreReturnValue;
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import javax.tools.Diagnostic;
-import javax.tools.JavaFileManager.Location;
-import javax.tools.JavaFileObject;
-import javax.tools.StandardLocation;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** A {@link Truth} subject for a {@link Compilation}. */
 public final class CompilationSubject extends Subject {
@@ -110,19 +109,16 @@ public final class CompilationSubject extends Subject {
   }
 
   /** Asserts that there was at least one error containing {@code expectedSubstring}. */
-  @CanIgnoreReturnValue
   public DiagnosticInFile hadErrorContaining(String expectedSubstring) {
     return hadDiagnosticContaining(expectedSubstring, ERROR);
   }
 
   /** Asserts that there was at least one error containing a match for {@code expectedPattern}. */
-  @CanIgnoreReturnValue
   public DiagnosticInFile hadErrorContainingMatch(String expectedPattern) {
     return hadDiagnosticContainingMatch(expectedPattern, ERROR);
   }
 
   /** Asserts that there was at least one error containing a match for {@code expectedPattern}. */
-  @CanIgnoreReturnValue
   public DiagnosticInFile hadErrorContainingMatch(Pattern expectedPattern) {
     return hadDiagnosticContainingMatch(expectedPattern, ERROR);
   }
@@ -133,19 +129,16 @@ public final class CompilationSubject extends Subject {
   }
 
   /** Asserts that there was at least one warning containing {@code expectedSubstring}. */
-  @CanIgnoreReturnValue
   public DiagnosticInFile hadWarningContaining(String expectedSubstring) {
     return hadDiagnosticContaining(expectedSubstring, WARNING, MANDATORY_WARNING);
   }
 
   /** Asserts that there was at least one warning containing a match for {@code expectedPattern}. */
-  @CanIgnoreReturnValue
   public DiagnosticInFile hadWarningContainingMatch(String expectedPattern) {
     return hadDiagnosticContainingMatch(expectedPattern, WARNING, MANDATORY_WARNING);
   }
 
   /** Asserts that there was at least one warning containing a match for {@code expectedPattern}. */
-  @CanIgnoreReturnValue
   public DiagnosticInFile hadWarningContainingMatch(Pattern expectedPattern) {
     return hadDiagnosticContainingMatch(expectedPattern, WARNING, MANDATORY_WARNING);
   }
@@ -156,19 +149,16 @@ public final class CompilationSubject extends Subject {
   }
 
   /** Asserts that there was at least one note containing {@code expectedSubstring}. */
-  @CanIgnoreReturnValue
   public DiagnosticInFile hadNoteContaining(String expectedSubstring) {
     return hadDiagnosticContaining(expectedSubstring, NOTE);
   }
 
   /** Asserts that there was at least one note containing a match for {@code expectedPattern}. */
-  @CanIgnoreReturnValue
   public DiagnosticInFile hadNoteContainingMatch(String expectedPattern) {
     return hadDiagnosticContainingMatch(expectedPattern, NOTE);
   }
 
   /** Asserts that there was at least one note containing a match for {@code expectedPattern}. */
-  @CanIgnoreReturnValue
   public DiagnosticInFile hadNoteContainingMatch(Pattern expectedPattern) {
     return hadDiagnosticContainingMatch(expectedPattern, NOTE);
   }
@@ -304,7 +294,6 @@ public final class CompilationSubject extends Subject {
    * Asserts that compilation generated a file named {@code fileName} in package {@code
    * packageName}.
    */
-  @CanIgnoreReturnValue
   public JavaFileObjectSubject generatedFile(
       Location location, String packageName, String fileName) {
     String path = packageName.isEmpty() ? fileName : packageName.replace('.', '/') + '/' + fileName;
@@ -312,13 +301,11 @@ public final class CompilationSubject extends Subject {
   }
 
   /** Asserts that compilation generated a file at {@code path}. */
-  @CanIgnoreReturnValue
   public JavaFileObjectSubject generatedFile(Location location, String path) {
     return checkGeneratedFile(actual.generatedFile(location, path), location, path);
   }
 
   /** Asserts that compilation generated a source file for a type with a given qualified name. */
-  @CanIgnoreReturnValue
   public JavaFileObjectSubject generatedSourceFile(String qualifiedName) {
     return generatedFile(
         StandardLocation.SOURCE_OUTPUT, qualifiedName.replaceAll("\\.", "/") + ".java");
@@ -401,8 +388,7 @@ public final class CompilationSubject extends Subject {
     }
 
     /** Asserts that the note, warning, or error was found in a given file. */
-    @CanIgnoreReturnValue
-    public DiagnosticOnLine inFile(JavaFileObject expectedFile) {
+      public DiagnosticOnLine inFile(JavaFileObject expectedFile) {
       return new DiagnosticOnLine(this, expectedFile, findDiagnosticsInFile(expectedFile));
     }
 
@@ -490,8 +476,7 @@ public final class CompilationSubject extends Subject {
     }
 
     /** Asserts that the note, warning, or error was found on a given line. */
-    @CanIgnoreReturnValue
-    public DiagnosticAtColumn onLine(long expectedLine) {
+      public DiagnosticAtColumn onLine(long expectedLine) {
       return new DiagnosticAtColumn(
           this, linesInFile, expectedLine, findMatchingDiagnosticsOnLine(expectedLine));
     }
@@ -513,7 +498,7 @@ public final class CompilationSubject extends Subject {
     private long findLineContainingSubstring(String expectedLineSubstring) {
       // The explicit type arguments below are needed by our nullness checker.
       ImmutableSet<Long> matchingLines =
-          Streams.<String, @Nullable Long>mapWithIndex(
+          Streams.<String, Long>mapWithIndex(
                   linesInFile.linesInFile().stream(),
                   (line, index) -> line.contains(expectedLineSubstring) ? index : null)
               .filter(notNull())
@@ -539,8 +524,7 @@ public final class CompilationSubject extends Subject {
      *
      * @param expectedLine the expected line number
      */
-    @CanIgnoreReturnValue
-    private ImmutableList<Diagnostic<? extends JavaFileObject>> findMatchingDiagnosticsOnLine(
+      private ImmutableList<Diagnostic<? extends JavaFileObject>> findMatchingDiagnosticsOnLine(
         long expectedLine) {
       ImmutableList<Diagnostic<? extends JavaFileObject>> diagnosticsOnLine =
           filterDiagnostics(diagnostic -> diagnostic.getLineNumber() == expectedLine);

@@ -15,6 +15,18 @@
  */
 package com.google.testing.compile;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
+
+import javax.tools.Diagnostic;
+import javax.tools.Diagnostic.Kind;
+import javax.tools.JavaFileManager.Location;
+import javax.tools.JavaFileObject;
+import java.io.IOException;
+import java.util.Optional;
+import java.util.stream.Collector;
+
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.testing.compile.JavaFileObjects.asByteSource;
 import static java.util.stream.Collectors.collectingAndThen;
@@ -25,17 +37,6 @@ import static javax.tools.Diagnostic.Kind.NOTE;
 import static javax.tools.Diagnostic.Kind.WARNING;
 import static javax.tools.JavaFileObject.Kind.CLASS;
 import static javax.tools.StandardLocation.SOURCE_OUTPUT;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
-import java.io.IOException;
-import java.util.Optional;
-import java.util.stream.Collector;
-import javax.tools.Diagnostic;
-import javax.tools.Diagnostic.Kind;
-import javax.tools.JavaFileManager.Location;
-import javax.tools.JavaFileObject;
 
 /** The results of {@linkplain Compiler#compile compiling} source files. */
 public final class Compilation {

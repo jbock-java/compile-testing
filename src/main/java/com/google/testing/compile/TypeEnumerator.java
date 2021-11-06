@@ -15,8 +15,6 @@
  */
 package com.google.testing.compile;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
@@ -28,8 +26,10 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreeScanner;
+
 import java.util.Set;
-import org.checkerframework.checker.nullness.qual.Nullable;
+
+import static com.google.common.base.MoreObjects.firstNonNull;
 
 /**
  * Provides information about the set of types that are declared by a {@code CompilationUnitTree}.
@@ -50,9 +50,9 @@ final class TypeEnumerator {
 
   /** A {@link TreeScanner} for determining type declarations */
   @SuppressWarnings("restriction") // Sun APIs usage intended
-  static final class TypeScanner extends TreeScanner<Set<String>, @Nullable Void> {
+  static final class TypeScanner extends TreeScanner<Set<String>, Void> {
     @Override
-    public Set<String> scan(Tree node, @Nullable Void v) {
+    public Set<String> scan(Tree node, Void v) {
       return firstNonNull(super.scan(node, v), ImmutableSet.<String>of());
     }
 
@@ -62,23 +62,23 @@ final class TypeEnumerator {
     }
 
     @Override
-    public Set<String> visitClass(ClassTree reference, @Nullable Void v) {
+    public Set<String> visitClass(ClassTree reference, Void v) {
       return ImmutableSet.of(reference.getSimpleName().toString());
     }
 
     @Override
     public Set<String> visitExpressionStatement(
-        ExpressionStatementTree reference, @Nullable Void v) {
+        ExpressionStatementTree reference, Void v) {
       return scan(reference.getExpression(), v);
     }
 
     @Override
-    public Set<String> visitIdentifier(IdentifierTree reference, @Nullable Void v) {
+    public Set<String> visitIdentifier(IdentifierTree reference, Void v) {
       return ImmutableSet.of(reference.getName().toString());
     }
 
     @Override
-    public Set<String> visitMemberSelect(MemberSelectTree reference, @Nullable Void v) {
+    public Set<String> visitMemberSelect(MemberSelectTree reference, Void v) {
       Set<String> expressionSet = scan(reference.getExpression(), v);
       if (expressionSet.size() != 1) {
         throw new AssertionError("Internal error in NameFinder. Expected to find exactly one "
@@ -89,7 +89,7 @@ final class TypeEnumerator {
     }
 
     @Override
-    public Set<String> visitCompilationUnit(CompilationUnitTree reference, @Nullable Void v) {
+    public Set<String> visitCompilationUnit(CompilationUnitTree reference, Void v) {
       Set<String> packageSet = reference.getPackageName() == null ?
           ImmutableSet.of("") : scan(reference.getPackageName(), v);
       if (packageSet.size() != 1) {

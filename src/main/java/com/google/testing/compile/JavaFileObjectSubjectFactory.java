@@ -17,6 +17,7 @@ package com.google.testing.compile;
 
 import com.google.common.truth.FailureMetadata;
 import com.google.common.truth.Subject;
+
 import javax.tools.JavaFileObject;
 
 /** A factory for {@link JavaFileObjectSubject}s. */

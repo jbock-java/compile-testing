@@ -16,15 +16,14 @@
 
 package com.google.testing.compile;
 
+import javax.tools.ForwardingJavaFileManager;
+import javax.tools.JavaFileObject;
+import javax.tools.StandardJavaFileManager;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.Collection;
-import javax.tools.ForwardingJavaFileManager;
-import javax.tools.JavaFileManager.Location;
-import javax.tools.JavaFileObject;
-import javax.tools.StandardJavaFileManager;
 
 /**
  * Forwards calls to a given {@link StandardJavaFileManager}. Subclasses of this class might

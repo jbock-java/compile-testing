@@ -15,12 +15,6 @@
  */
 package com.google.testing.compile;
 
-import static com.google.common.base.Functions.toStringFunction;
-import static com.google.common.collect.ImmutableList.toImmutableList;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static javax.tools.ToolProvider.getSystemJavaCompiler;
-
-import com.google.auto.value.AutoValue;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
 import com.google.common.base.StandardSystemProperty;
@@ -29,6 +23,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.testing.compile.Compilation.Status;
+
+import javax.annotation.processing.Processor;
+import javax.tools.DiagnosticCollector;
+import javax.tools.JavaCompiler;
+import javax.tools.JavaCompiler.CompilationTask;
+import javax.tools.JavaFileObject;
+import javax.tools.StandardLocation;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -38,16 +39,13 @@ import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
-import javax.annotation.processing.Processor;
-import javax.tools.DiagnosticCollector;
-import javax.tools.JavaCompiler;
-import javax.tools.JavaCompiler.CompilationTask;
-import javax.tools.JavaFileObject;
-import javax.tools.StandardLocation;
-import org.checkerframework.checker.nullness.qual.Nullable;
+
+import static com.google.common.base.Functions.toStringFunction;
+import static com.google.common.collect.ImmutableList.toImmutableList;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static javax.tools.ToolProvider.getSystemJavaCompiler;
 
 /** An object that can {@link #compile} Java source files. */
-@AutoValue
 // clashes with java.lang.Compiler (which is deprecated for removal in 9)
 @SuppressWarnings("JavaLangClash")
 public abstract class Compiler {
@@ -213,9 +211,9 @@ public abstract class Compiler {
   }
 
   @VisibleForTesting
-  static final @Nullable ClassLoader platformClassLoader = getPlatformClassLoader();
+  static final ClassLoader platformClassLoader = getPlatformClassLoader();
 
-  private static @Nullable ClassLoader getPlatformClassLoader() {
+  private static ClassLoader getPlatformClassLoader() {
     try {
       // JDK >= 9
       return (ClassLoader) ClassLoader.class.getMethod("getPlatformClassLoader").invoke(null);

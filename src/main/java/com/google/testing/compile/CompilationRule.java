@@ -15,12 +15,13 @@
  */
 package com.google.testing.compile;
 
-import static com.google.common.base.Preconditions.checkState;
-import static com.google.testing.compile.Compilation.Status.SUCCESS;
-import static com.google.testing.compile.Compiler.javac;
-
 import com.google.common.collect.ImmutableSet;
-import java.util.Set;
+import org.junit.Rule;
+import org.junit.rules.TestRule;
+import org.junit.runner.Description;
+import org.junit.runners.JUnit4;
+import org.junit.runners.model.Statement;
+
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
@@ -29,11 +30,11 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
-import org.junit.Rule;
-import org.junit.rules.TestRule;
-import org.junit.runner.Description;
-import org.junit.runners.JUnit4;
-import org.junit.runners.model.Statement;
+import java.util.Set;
+
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.testing.compile.Compilation.Status.SUCCESS;
+import static com.google.testing.compile.Compiler.javac;
 
 /**
  * A {@link JUnit4} {@link Rule} that executes tests such that a instances of {@link Elements} and

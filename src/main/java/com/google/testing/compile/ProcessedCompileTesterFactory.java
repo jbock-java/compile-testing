@@ -15,8 +15,8 @@
  */
 package com.google.testing.compile;
 
-import java.io.File;
 import javax.annotation.processing.Processor;
+import java.io.File;
 
 /**
  * Creates {@link CompileTester} instances that test compilation with provided {@link Processor}

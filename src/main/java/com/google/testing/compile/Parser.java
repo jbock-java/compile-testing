@@ -15,12 +15,6 @@
  */
 package com.google.testing.compile;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-import static java.lang.Boolean.TRUE;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.function.Predicate.isEqual;
-import static javax.tools.Diagnostic.Kind.ERROR;
-
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
@@ -35,14 +29,21 @@ import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacTool;
 import com.sun.tools.javac.util.Context;
-import java.io.IOException;
-import java.util.List;
-import java.util.Locale;
+
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
+
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static java.lang.Boolean.TRUE;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.function.Predicate.isEqual;
+import static javax.tools.Diagnostic.Kind.ERROR;
 
 /** Methods to parse Java source files. */
 public final class Parser {

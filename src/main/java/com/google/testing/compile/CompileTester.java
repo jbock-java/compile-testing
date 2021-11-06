@@ -16,13 +16,11 @@
 package com.google.testing.compile;
 
 import com.google.common.io.ByteSource;
-import com.google.errorprone.annotations.CanIgnoreReturnValue;
-
-import java.nio.charset.Charset;
 
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
+import java.nio.charset.Charset;
 
 /**
  * The root of the fluent API for testing the result of compilation.
@@ -40,18 +38,15 @@ public interface CompileTester {
   void parsesAs(JavaFileObject first, JavaFileObject... rest);
 
   /** The clause in the fluent API that tests for successful compilation without errors. */
-  @CanIgnoreReturnValue
   SuccessfulCompilationClause compilesWithoutError();
 
   /**
    * The clause in the fluent API that tests for successful compilation without warnings or
    * errors.
    */
-  @CanIgnoreReturnValue
   CleanCompilationClause compilesWithoutWarnings();
 
   /** The clause in the fluent API that tests for unsuccessful compilation. */
-  @CanIgnoreReturnValue
   UnsuccessfulCompilationClause failsToCompile();
 
   /**
@@ -73,15 +68,13 @@ public interface CompileTester {
      * Checks that a note exists that contains the given fragment in the
      * {@linkplain Diagnostic#getMessage(java.util.Locale) diagnostic message}.
      */
-    @CanIgnoreReturnValue
-    FileClause<T> withNoteContaining(String messageFragment);
+      FileClause<T> withNoteContaining(String messageFragment);
 
     /**
      * Checks that the total note count in all files matches the given amount. This only counts
      * diagnostics of the kind {@link Diagnostic.Kind#NOTE}.
      */
-    @CanIgnoreReturnValue
-    T withNoteCount(int noteCount);
+      T withNoteCount(int noteCount);
   }
 
   /**
@@ -95,15 +88,13 @@ public interface CompileTester {
      * Checks that a warning exists that contains the given fragment in the
      * {@linkplain Diagnostic#getMessage(java.util.Locale) diagnostic message}.
      */
-    @CanIgnoreReturnValue
-    FileClause<T> withWarningContaining(String messageFragment);
+      FileClause<T> withWarningContaining(String messageFragment);
 
     /**
      * Checks that the total warning count in all files matches the given amount. This only counts
      * diagnostics of the kind {@link Diagnostic.Kind#WARNING}.
      */
-    @CanIgnoreReturnValue
-    T withWarningCount(int warningCount);
+      T withWarningCount(int warningCount);
   }
 
   /**
@@ -113,8 +104,7 @@ public interface CompileTester {
    * @param T the clause type returned by {@link ChainingClause#and()}
    */
   public interface FileClause<T> extends ChainingClause<T> {
-    @CanIgnoreReturnValue
-    LineClause<T> in(JavaFileObject file);
+      LineClause<T> in(JavaFileObject file);
   }
 
   /**
@@ -124,8 +114,7 @@ public interface CompileTester {
    * @param T the clause type returned by {@link ChainingClause#and()}
    */
   public interface LineClause<T> extends ChainingClause<T> {
-    @CanIgnoreReturnValue
-    ColumnClause<T> onLine(long lineNumber);
+      ColumnClause<T> onLine(long lineNumber);
   }
 
   /**
@@ -135,8 +124,7 @@ public interface CompileTester {
    * @param T the clause type returned by {@link ChainingClause#and()}
    */
   public interface ColumnClause<T> extends ChainingClause<T> {
-    @CanIgnoreReturnValue
-    ChainingClause<T> atColumn(long columnNumber);
+      ChainingClause<T> atColumn(long columnNumber);
   }
 
   /**
@@ -150,21 +138,18 @@ public interface CompileTester {
      * <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">AST</a> was generated for each of
      * the given {@linkplain JavaFileObject files}.
      */
-    @CanIgnoreReturnValue
-    T generatesSources(JavaFileObject first, JavaFileObject... rest);
+      T generatesSources(JavaFileObject first, JavaFileObject... rest);
 
     /**
      * Checks that a file with equivalent kind and content was generated for each of the given
      * {@linkplain JavaFileObject files}.
      */
-    @CanIgnoreReturnValue
-    T generatesFiles(JavaFileObject first, JavaFileObject... rest);
+      T generatesFiles(JavaFileObject first, JavaFileObject... rest);
 
     /**
      * Checks that a file with the specified location, package, and filename was generated.
      */
-    @CanIgnoreReturnValue
-    SuccessfulFileClause<T> generatesFileNamed(
+      SuccessfulFileClause<T> generatesFileNamed(
         JavaFileManager.Location location, String packageName, String relativeName);
   }
 
@@ -178,15 +163,13 @@ public interface CompileTester {
      * Checks that the contents of the generated file match the contents of the specified
      * {@link ByteSource}.
      */
-    @CanIgnoreReturnValue
-    SuccessfulFileClause<T> withContents(ByteSource expectedByteSource);
+      SuccessfulFileClause<T> withContents(ByteSource expectedByteSource);
 
     /**
      * Checks that the contents of the generated file are equal to the specified string in the given
      * charset.
      */
-    @CanIgnoreReturnValue
-    SuccessfulFileClause<T> withStringContents(Charset charset, String expectedString);
+      SuccessfulFileClause<T> withStringContents(Charset charset, String expectedString);
   }
 
   /** The clause in the fluent API for further tests on successful compilations. */
@@ -206,14 +189,12 @@ public interface CompileTester {
      * Checks that an error exists that contains the given fragment in the
      * {@linkplain Diagnostic#getMessage(java.util.Locale) diagnostic message}.
      */
-    @CanIgnoreReturnValue
-    FileClause<UnsuccessfulCompilationClause> withErrorContaining(String messageFragment);
+      FileClause<UnsuccessfulCompilationClause> withErrorContaining(String messageFragment);
 
     /**
      * Checks that the total error count in all files matches the given amount. This only counts
      * diagnostics of the kind {@link Diagnostic.Kind#ERROR} and not (for example) warnings.
      */
-    @CanIgnoreReturnValue
-    UnsuccessfulCompilationClause withErrorCount(int errorCount);
+      UnsuccessfulCompilationClause withErrorCount(int errorCount);
   }
 }
