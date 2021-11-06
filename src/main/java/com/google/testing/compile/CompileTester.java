@@ -31,170 +31,172 @@ import java.nio.charset.Charset;
  * @author Gregory Kick
  */
 public interface CompileTester {
-  /**
-   * The clause in the fluent API that tests that the code parses equivalently to the specified
-   * code.
-   */
-  void parsesAs(JavaFileObject first, JavaFileObject... rest);
-
-  /** The clause in the fluent API that tests for successful compilation without errors. */
-  SuccessfulCompilationClause compilesWithoutError();
-
-  /**
-   * The clause in the fluent API that tests for successful compilation without warnings or
-   * errors.
-   */
-  CleanCompilationClause compilesWithoutWarnings();
-
-  /** The clause in the fluent API that tests for unsuccessful compilation. */
-  UnsuccessfulCompilationClause failsToCompile();
-
-  /**
-   * The clause in the fluent API that allows for chaining test conditions.
-   *
-   * @param T the clause type returned by {@link #and()}
-   */
-  public interface ChainingClause<T> {
-    T and();
-  }
-
-  /**
-   * The clause in the fluent API that checks notes in a compilation.
-   *
-   * @param T the non-generic clause type implementing this interface
-   */
-  public interface CompilationWithNotesClause<T> {
     /**
-     * Checks that a note exists that contains the given fragment in the
-     * {@linkplain Diagnostic#getMessage(java.util.Locale) diagnostic message}.
+     * The clause in the fluent API that tests that the code parses equivalently to the specified
+     * code.
      */
-      FileClause<T> withNoteContaining(String messageFragment);
+    void parsesAs(JavaFileObject first, JavaFileObject... rest);
+
+    /** The clause in the fluent API that tests for successful compilation without errors. */
+    SuccessfulCompilationClause compilesWithoutError();
 
     /**
-     * Checks that the total note count in all files matches the given amount. This only counts
-     * diagnostics of the kind {@link Diagnostic.Kind#NOTE}.
+     * The clause in the fluent API that tests for successful compilation without warnings or
+     * errors.
      */
-      T withNoteCount(int noteCount);
-  }
+    CleanCompilationClause compilesWithoutWarnings();
 
-  /**
-   * The clause in the fluent API that checks notes and warnings in a compilation.
-   *
-   * @param T the non-generic clause type implementing this interface
-   */
-  public interface CompilationWithWarningsClause<T> extends CompilationWithNotesClause<T> {
+    /** The clause in the fluent API that tests for unsuccessful compilation. */
+    UnsuccessfulCompilationClause failsToCompile();
 
     /**
-     * Checks that a warning exists that contains the given fragment in the
-     * {@linkplain Diagnostic#getMessage(java.util.Locale) diagnostic message}.
+     * The clause in the fluent API that allows for chaining test conditions.
+     *
+     * @param T the clause type returned by {@link #and()}
      */
-      FileClause<T> withWarningContaining(String messageFragment);
+    public interface ChainingClause<T> {
+        T and();
+    }
 
     /**
-     * Checks that the total warning count in all files matches the given amount. This only counts
-     * diagnostics of the kind {@link Diagnostic.Kind#WARNING}.
+     * The clause in the fluent API that checks notes in a compilation.
+     *
+     * @param T the non-generic clause type implementing this interface
      */
-      T withWarningCount(int warningCount);
-  }
+    public interface CompilationWithNotesClause<T> {
+        /**
+         * Checks that a note exists that contains the given fragment in the
+         * {@linkplain Diagnostic#getMessage(java.util.Locale) diagnostic message}.
+         */
+        FileClause<T> withNoteContaining(String messageFragment);
 
-  /**
-   * The clause in the fluent API that checks that a diagnostic is associated with a particular
-   * {@link JavaFileObject}.
-   *
-   * @param T the clause type returned by {@link ChainingClause#and()}
-   */
-  public interface FileClause<T> extends ChainingClause<T> {
-      LineClause<T> in(JavaFileObject file);
-  }
-
-  /**
-   * The clause in the fluent API that checks that a diagnostic is on a particular
-   * {@linkplain Diagnostic#getLineNumber() line}.
-   *
-   * @param T the clause type returned by {@link ChainingClause#and()}
-   */
-  public interface LineClause<T> extends ChainingClause<T> {
-      ColumnClause<T> onLine(long lineNumber);
-  }
-
-  /**
-   * The clause in the fluent API that checks that a diagnostic starts at a particular
-   * {@linkplain Diagnostic#getColumnNumber() column}.
-   *
-   * @param T the clause type returned by {@link ChainingClause#and()}
-   */
-  public interface ColumnClause<T> extends ChainingClause<T> {
-      ChainingClause<T> atColumn(long columnNumber);
-  }
-
-  /**
-   * The clause in the fluent API that checks that files were generated.
-   *
-   * @param T the non-generic clause type implementing this interface
-   */
-  public interface GeneratedPredicateClause<T> {
-    /**
-     * Checks that a source file with an equivalent
-     * <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">AST</a> was generated for each of
-     * the given {@linkplain JavaFileObject files}.
-     */
-      T generatesSources(JavaFileObject first, JavaFileObject... rest);
+        /**
+         * Checks that the total note count in all files matches the given amount. This only counts
+         * diagnostics of the kind {@link Diagnostic.Kind#NOTE}.
+         */
+        T withNoteCount(int noteCount);
+    }
 
     /**
-     * Checks that a file with equivalent kind and content was generated for each of the given
-     * {@linkplain JavaFileObject files}.
+     * The clause in the fluent API that checks notes and warnings in a compilation.
+     *
+     * @param T the non-generic clause type implementing this interface
      */
-      T generatesFiles(JavaFileObject first, JavaFileObject... rest);
+    public interface CompilationWithWarningsClause<T> extends CompilationWithNotesClause<T> {
+
+        /**
+         * Checks that a warning exists that contains the given fragment in the
+         * {@linkplain Diagnostic#getMessage(java.util.Locale) diagnostic message}.
+         */
+        FileClause<T> withWarningContaining(String messageFragment);
+
+        /**
+         * Checks that the total warning count in all files matches the given amount. This only counts
+         * diagnostics of the kind {@link Diagnostic.Kind#WARNING}.
+         */
+        T withWarningCount(int warningCount);
+    }
 
     /**
-     * Checks that a file with the specified location, package, and filename was generated.
+     * The clause in the fluent API that checks that a diagnostic is associated with a particular
+     * {@link JavaFileObject}.
+     *
+     * @param T the clause type returned by {@link ChainingClause#and()}
      */
-      SuccessfulFileClause<T> generatesFileNamed(
-        JavaFileManager.Location location, String packageName, String relativeName);
-  }
-
-  /**
-   * The clause in the fluent API that checks that a generated file has the specified contents.
-   *
-   * @param T the non-generic clause type implementing this interface
-   */
-  public interface SuccessfulFileClause<T> extends ChainingClause<GeneratedPredicateClause<T>> {
-    /**
-     * Checks that the contents of the generated file match the contents of the specified
-     * {@link ByteSource}.
-     */
-      SuccessfulFileClause<T> withContents(ByteSource expectedByteSource);
+    public interface FileClause<T> extends ChainingClause<T> {
+        LineClause<T> in(JavaFileObject file);
+    }
 
     /**
-     * Checks that the contents of the generated file are equal to the specified string in the given
-     * charset.
+     * The clause in the fluent API that checks that a diagnostic is on a particular
+     * {@linkplain Diagnostic#getLineNumber() line}.
+     *
+     * @param T the clause type returned by {@link ChainingClause#and()}
      */
-      SuccessfulFileClause<T> withStringContents(Charset charset, String expectedString);
-  }
-
-  /** The clause in the fluent API for further tests on successful compilations. */
-  public interface SuccessfulCompilationClause
-      extends CompilationWithWarningsClause<SuccessfulCompilationClause>,
-          ChainingClause<GeneratedPredicateClause<SuccessfulCompilationClause>> {}
-
-  /** The clause in the fluent API for further tests on successful compilations without warnings. */
-  public interface CleanCompilationClause
-      extends CompilationWithNotesClause<CleanCompilationClause>,
-          ChainingClause<GeneratedPredicateClause<CleanCompilationClause>> {}
-
-  /** The clause in the fluent API for further tests on unsuccessful compilations. */
-  public interface UnsuccessfulCompilationClause
-      extends CompilationWithWarningsClause<UnsuccessfulCompilationClause> {
-    /**
-     * Checks that an error exists that contains the given fragment in the
-     * {@linkplain Diagnostic#getMessage(java.util.Locale) diagnostic message}.
-     */
-      FileClause<UnsuccessfulCompilationClause> withErrorContaining(String messageFragment);
+    public interface LineClause<T> extends ChainingClause<T> {
+        ColumnClause<T> onLine(long lineNumber);
+    }
 
     /**
-     * Checks that the total error count in all files matches the given amount. This only counts
-     * diagnostics of the kind {@link Diagnostic.Kind#ERROR} and not (for example) warnings.
+     * The clause in the fluent API that checks that a diagnostic starts at a particular
+     * {@linkplain Diagnostic#getColumnNumber() column}.
+     *
+     * @param T the clause type returned by {@link ChainingClause#and()}
      */
-      UnsuccessfulCompilationClause withErrorCount(int errorCount);
-  }
+    public interface ColumnClause<T> extends ChainingClause<T> {
+        ChainingClause<T> atColumn(long columnNumber);
+    }
+
+    /**
+     * The clause in the fluent API that checks that files were generated.
+     *
+     * @param T the non-generic clause type implementing this interface
+     */
+    public interface GeneratedPredicateClause<T> {
+        /**
+         * Checks that a source file with an equivalent
+         * <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">AST</a> was generated for each of
+         * the given {@linkplain JavaFileObject files}.
+         */
+        T generatesSources(JavaFileObject first, JavaFileObject... rest);
+
+        /**
+         * Checks that a file with equivalent kind and content was generated for each of the given
+         * {@linkplain JavaFileObject files}.
+         */
+        T generatesFiles(JavaFileObject first, JavaFileObject... rest);
+
+        /**
+         * Checks that a file with the specified location, package, and filename was generated.
+         */
+        SuccessfulFileClause<T> generatesFileNamed(
+                JavaFileManager.Location location, String packageName, String relativeName);
+    }
+
+    /**
+     * The clause in the fluent API that checks that a generated file has the specified contents.
+     *
+     * @param T the non-generic clause type implementing this interface
+     */
+    public interface SuccessfulFileClause<T> extends ChainingClause<GeneratedPredicateClause<T>> {
+        /**
+         * Checks that the contents of the generated file match the contents of the specified
+         * {@link ByteSource}.
+         */
+        SuccessfulFileClause<T> withContents(ByteSource expectedByteSource);
+
+        /**
+         * Checks that the contents of the generated file are equal to the specified string in the given
+         * charset.
+         */
+        SuccessfulFileClause<T> withStringContents(Charset charset, String expectedString);
+    }
+
+    /** The clause in the fluent API for further tests on successful compilations. */
+    public interface SuccessfulCompilationClause
+            extends CompilationWithWarningsClause<SuccessfulCompilationClause>,
+            ChainingClause<GeneratedPredicateClause<SuccessfulCompilationClause>> {
+    }
+
+    /** The clause in the fluent API for further tests on successful compilations without warnings. */
+    public interface CleanCompilationClause
+            extends CompilationWithNotesClause<CleanCompilationClause>,
+            ChainingClause<GeneratedPredicateClause<CleanCompilationClause>> {
+    }
+
+    /** The clause in the fluent API for further tests on unsuccessful compilations. */
+    public interface UnsuccessfulCompilationClause
+            extends CompilationWithWarningsClause<UnsuccessfulCompilationClause> {
+        /**
+         * Checks that an error exists that contains the given fragment in the
+         * {@linkplain Diagnostic#getMessage(java.util.Locale) diagnostic message}.
+         */
+        FileClause<UnsuccessfulCompilationClause> withErrorContaining(String messageFragment);
+
+        /**
+         * Checks that the total error count in all files matches the given amount. This only counts
+         * diagnostics of the kind {@link Diagnostic.Kind#ERROR} and not (for example) warnings.
+         */
+        UnsuccessfulCompilationClause withErrorCount(int errorCount);
+    }
 }

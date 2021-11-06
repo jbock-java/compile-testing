@@ -35,156 +35,156 @@ import static javax.tools.Diagnostic.NOPOS;
  * @author Stephen Pratt
  */
 final class TreeContext {
-  private final CompilationUnitTree compilationUnit;
-  private final Trees trees;
-  private final SourcePositions sourcePositions;
-  private final LineMap lineMap;
+    private final CompilationUnitTree compilationUnit;
+    private final Trees trees;
+    private final SourcePositions sourcePositions;
+    private final LineMap lineMap;
 
-  TreeContext(CompilationUnitTree compilationUnit, Trees trees) {
-    this.compilationUnit = compilationUnit;
-    this.trees = trees;
-    this.sourcePositions = trees.getSourcePositions();
-    this.lineMap = compilationUnit.getLineMap();
-  }
-
-  /** Returns the {@code CompilationUnitTree} instance for this {@code TreeContext}. */
-  CompilationUnitTree getCompilationUnit() {
-    return compilationUnit;
-  }
-
-  /** Returns the {@code Trees} instance for this {@code TreeContext}. */
-  Trees getTrees() {
-    return trees;
-  }
-
-  /**
-   * Returns the {@code TreePath} to the given sub-{@code Tree} of this object's
-   * {@code CompilationUnitTree}
-   *
-   * @throws IllegalArgumentException if the node provided is not a sub-{@code Tree} of this
-   *   object's {@code CompilationUnitTree}.
-   */
-  TreePath getNodePath(Tree node) {
-    TreePath treePath = trees.getPath(compilationUnit, node);
-    checkArgument(treePath != null, "The node provided was not a subtree of the "
-        + "CompilationUnitTree in this TreeContext. CompilationUnit: %s; Node:",
-        compilationUnit, node);
-    return treePath;
-  }
-
-  /**
-   * Returns start line of the given sub-{@code Tree} of this object's {@code CompilationUnitTree},
-   * climbing the associated {@code TreePath} until a value other than
-   * {@link javax.tools.Diagnostic.NOPOS} is found.
-   *
-   * <p>This method will return {@link javax.tools.Diagnostic.NOPOS} if that value is returned
-   * by a call to {@link SourcePositions#getStartPosition} for every node in the {@link TreePath}
-   * provided.
-   *
-   * @throws IllegalArgumentException if the node provided is not a sub-{@code Tree} of this
-   *   object's {@code CompilationUnitTree}.
-   */
-  long getNodeStartLine(Tree node) {
-    long startPosition = getNodeStartPosition(node);
-    return startPosition == NOPOS ? NOPOS : lineMap.getLineNumber(startPosition);
-  }
-
-  /**
-   * Returns start column of the given sub-{@code Tree} of this object's
-   * {@code CompilationUnitTree}, climbing the associated {@code TreePath} until a value other than
-   * {@link javax.tools.Diagnostic.NOPOS} is found.
-   *
-   * <p>This method will return {@link javax.tools.Diagnostic.NOPOS} if that value is returned
-   * by a call to {@link SourcePositions#getStartPosition} for every node in the {@link TreePath}
-   * provided.
-   *
-   * @throws IllegalArgumentException if the node provided is not a sub-{@code Tree} of this
-   *   object's {@code CompilationUnitTree}.
-   */
-  long getNodeStartColumn(Tree node) {
-    long startPosition = getNodeStartPosition(node);
-    return startPosition == NOPOS ? NOPOS : lineMap.getColumnNumber(startPosition);
-  }
-
-  /**
-   * Returns end line of the given sub-{@code Tree} of this object's {@code CompilationUnitTree}.
-   * climbing the associated {@code TreePath} until a value other than
-   * {@link javax.tools.Diagnostic.NOPOS} is found.
-   *
-   * <p>This method will return {@link javax.tools.Diagnostic.NOPOS} if that value is returned
-   * by a call to {@link SourcePositions#getEndPosition} for every node in the {@link TreePath}
-   * provided.
-   *
-   * @throws IllegalArgumentException if the node provided is not a sub-{@code Tree} of this
-   *   object's {@code CompilationUnitTree}.
-   */
-  long getNodeEndLine(Tree node) {
-    long endPosition = getNodeEndPosition(node);
-    return endPosition == NOPOS ? NOPOS : lineMap.getLineNumber(endPosition);
-  }
-
-  /**
-   * Returns end column of the given sub-{@code Tree} of this object's {@code CompilationUnitTree}.
-   * climbing the associated {@code TreePath} until a value other than
-   * {@link javax.tools.Diagnostic.NOPOS} is found.
-   *
-   * <p>This method will return {@link javax.tools.Diagnostic.NOPOS} if that value is returned
-   * by a call to {@link SourcePositions#getEndPosition} for every node in the {@link TreePath}
-   * provided.
-   *
-   * @throws IllegalArgumentException if the node provided is not a sub-{@code Tree} of this
-   *   object's {@code CompilationUnitTree}.
-   */
-  long getNodeEndColumn(Tree node) {
-    long endPosition = getNodeEndPosition(node);
-    return endPosition == NOPOS ? NOPOS : lineMap.getColumnNumber(endPosition);
-  }
-
-  /**
-   * Returns start position of the given sub-{@code Tree} of this object's
-   * {@code CompilationUnitTree}, climbing the associated {@code TreePath} until a value other than
-   * {@link javax.tools.Diagnostic.NOPOS} is found.
-   *
-   * <p>This method will return {@link javax.tools.Diagnostic.NOPOS} if that value is returned
-   * by a call to {@link SourcePositions#getStartPosition} for every node in the {@link TreePath}
-   * provided.
-   *
-   * @throws IllegalArgumentException if the node provided is not a sub-{@code Tree} of this
-   *   object's {@code CompilationUnitTree}.
-   */
-  long getNodeStartPosition(Tree node) {
-    TreePath currentNode = getNodePath(node);
-    while (currentNode != null) {
-      long startPosition = sourcePositions.getStartPosition(compilationUnit, currentNode.getLeaf());
-      if (startPosition != NOPOS) {
-        return startPosition;
-      }
-      currentNode = currentNode.getParentPath();
+    TreeContext(CompilationUnitTree compilationUnit, Trees trees) {
+        this.compilationUnit = compilationUnit;
+        this.trees = trees;
+        this.sourcePositions = trees.getSourcePositions();
+        this.lineMap = compilationUnit.getLineMap();
     }
-    return NOPOS;
-  }
 
-  /**
-   * Returns end position of the given sub-{@code Tree} of this object's
-   * {@code CompilationUnitTree}, climbing the associated {@code TreePath} until a value other than
-   * {@link javax.tools.Diagnostic.NOPOS} is found.
-   *
-   * <p>This method will return {@link javax.tools.Diagnostic.NOPOS} if that value is returned
-   * by a call to {@link SourcePositions#getEndPosition} for every node in the {@link TreePath}
-   * provided.
-   *
-   * @throws IllegalArgumentException if the node provided is not a sub-{@code Tree} of this
-   *   object's {@code CompilationUnitTree}.
-   */
-  long getNodeEndPosition(Tree node) {
-    TreePath currentNode = getNodePath(node);
-    while (node != null) {
-      long endPosition = sourcePositions.getEndPosition(compilationUnit, currentNode.getLeaf());
-      if (endPosition != NOPOS) {
-        return endPosition;
-      }
-      currentNode = currentNode.getParentPath();
+    /** Returns the {@code CompilationUnitTree} instance for this {@code TreeContext}. */
+    CompilationUnitTree getCompilationUnit() {
+        return compilationUnit;
     }
-    return NOPOS;
-  }
+
+    /** Returns the {@code Trees} instance for this {@code TreeContext}. */
+    Trees getTrees() {
+        return trees;
+    }
+
+    /**
+     * Returns the {@code TreePath} to the given sub-{@code Tree} of this object's
+     * {@code CompilationUnitTree}
+     *
+     * @throws IllegalArgumentException if the node provided is not a sub-{@code Tree} of this
+     *   object's {@code CompilationUnitTree}.
+     */
+    TreePath getNodePath(Tree node) {
+        TreePath treePath = trees.getPath(compilationUnit, node);
+        checkArgument(treePath != null, "The node provided was not a subtree of the "
+                        + "CompilationUnitTree in this TreeContext. CompilationUnit: %s; Node:",
+                compilationUnit, node);
+        return treePath;
+    }
+
+    /**
+     * Returns start line of the given sub-{@code Tree} of this object's {@code CompilationUnitTree},
+     * climbing the associated {@code TreePath} until a value other than
+     * {@link javax.tools.Diagnostic.NOPOS} is found.
+     *
+     * <p>This method will return {@link javax.tools.Diagnostic.NOPOS} if that value is returned
+     * by a call to {@link SourcePositions#getStartPosition} for every node in the {@link TreePath}
+     * provided.
+     *
+     * @throws IllegalArgumentException if the node provided is not a sub-{@code Tree} of this
+     *   object's {@code CompilationUnitTree}.
+     */
+    long getNodeStartLine(Tree node) {
+        long startPosition = getNodeStartPosition(node);
+        return startPosition == NOPOS ? NOPOS : lineMap.getLineNumber(startPosition);
+    }
+
+    /**
+     * Returns start column of the given sub-{@code Tree} of this object's
+     * {@code CompilationUnitTree}, climbing the associated {@code TreePath} until a value other than
+     * {@link javax.tools.Diagnostic.NOPOS} is found.
+     *
+     * <p>This method will return {@link javax.tools.Diagnostic.NOPOS} if that value is returned
+     * by a call to {@link SourcePositions#getStartPosition} for every node in the {@link TreePath}
+     * provided.
+     *
+     * @throws IllegalArgumentException if the node provided is not a sub-{@code Tree} of this
+     *   object's {@code CompilationUnitTree}.
+     */
+    long getNodeStartColumn(Tree node) {
+        long startPosition = getNodeStartPosition(node);
+        return startPosition == NOPOS ? NOPOS : lineMap.getColumnNumber(startPosition);
+    }
+
+    /**
+     * Returns end line of the given sub-{@code Tree} of this object's {@code CompilationUnitTree}.
+     * climbing the associated {@code TreePath} until a value other than
+     * {@link javax.tools.Diagnostic.NOPOS} is found.
+     *
+     * <p>This method will return {@link javax.tools.Diagnostic.NOPOS} if that value is returned
+     * by a call to {@link SourcePositions#getEndPosition} for every node in the {@link TreePath}
+     * provided.
+     *
+     * @throws IllegalArgumentException if the node provided is not a sub-{@code Tree} of this
+     *   object's {@code CompilationUnitTree}.
+     */
+    long getNodeEndLine(Tree node) {
+        long endPosition = getNodeEndPosition(node);
+        return endPosition == NOPOS ? NOPOS : lineMap.getLineNumber(endPosition);
+    }
+
+    /**
+     * Returns end column of the given sub-{@code Tree} of this object's {@code CompilationUnitTree}.
+     * climbing the associated {@code TreePath} until a value other than
+     * {@link javax.tools.Diagnostic.NOPOS} is found.
+     *
+     * <p>This method will return {@link javax.tools.Diagnostic.NOPOS} if that value is returned
+     * by a call to {@link SourcePositions#getEndPosition} for every node in the {@link TreePath}
+     * provided.
+     *
+     * @throws IllegalArgumentException if the node provided is not a sub-{@code Tree} of this
+     *   object's {@code CompilationUnitTree}.
+     */
+    long getNodeEndColumn(Tree node) {
+        long endPosition = getNodeEndPosition(node);
+        return endPosition == NOPOS ? NOPOS : lineMap.getColumnNumber(endPosition);
+    }
+
+    /**
+     * Returns start position of the given sub-{@code Tree} of this object's
+     * {@code CompilationUnitTree}, climbing the associated {@code TreePath} until a value other than
+     * {@link javax.tools.Diagnostic.NOPOS} is found.
+     *
+     * <p>This method will return {@link javax.tools.Diagnostic.NOPOS} if that value is returned
+     * by a call to {@link SourcePositions#getStartPosition} for every node in the {@link TreePath}
+     * provided.
+     *
+     * @throws IllegalArgumentException if the node provided is not a sub-{@code Tree} of this
+     *   object's {@code CompilationUnitTree}.
+     */
+    long getNodeStartPosition(Tree node) {
+        TreePath currentNode = getNodePath(node);
+        while (currentNode != null) {
+            long startPosition = sourcePositions.getStartPosition(compilationUnit, currentNode.getLeaf());
+            if (startPosition != NOPOS) {
+                return startPosition;
+            }
+            currentNode = currentNode.getParentPath();
+        }
+        return NOPOS;
+    }
+
+    /**
+     * Returns end position of the given sub-{@code Tree} of this object's
+     * {@code CompilationUnitTree}, climbing the associated {@code TreePath} until a value other than
+     * {@link javax.tools.Diagnostic.NOPOS} is found.
+     *
+     * <p>This method will return {@link javax.tools.Diagnostic.NOPOS} if that value is returned
+     * by a call to {@link SourcePositions#getEndPosition} for every node in the {@link TreePath}
+     * provided.
+     *
+     * @throws IllegalArgumentException if the node provided is not a sub-{@code Tree} of this
+     *   object's {@code CompilationUnitTree}.
+     */
+    long getNodeEndPosition(Tree node) {
+        TreePath currentNode = getNodePath(node);
+        while (node != null) {
+            long endPosition = sourcePositions.getEndPosition(compilationUnit, currentNode.getLeaf());
+            if (endPosition != NOPOS) {
+                return endPosition;
+            }
+            currentNode = currentNode.getParentPath();
+        }
+        return NOPOS;
+    }
 }

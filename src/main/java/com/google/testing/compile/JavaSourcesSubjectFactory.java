@@ -27,16 +27,17 @@ import javax.tools.JavaFileObject;
  * @author Gregory Kick
  */
 public final class JavaSourcesSubjectFactory
-    implements Subject.Factory<JavaSourcesSubject, Iterable<? extends JavaFileObject>> {
-  public static JavaSourcesSubjectFactory javaSources() {
-    return new JavaSourcesSubjectFactory();
-  }
+        implements Subject.Factory<JavaSourcesSubject, Iterable<? extends JavaFileObject>> {
+    public static JavaSourcesSubjectFactory javaSources() {
+        return new JavaSourcesSubjectFactory();
+    }
 
-  private JavaSourcesSubjectFactory() {}
+    private JavaSourcesSubjectFactory() {
+    }
 
-  @Override
-  public JavaSourcesSubject createSubject(FailureMetadata failureMetadata,
-      Iterable<? extends JavaFileObject> subject) {
-    return new JavaSourcesSubject(failureMetadata, subject);
-  }
+    @Override
+    public JavaSourcesSubject createSubject(FailureMetadata failureMetadata,
+                                            Iterable<? extends JavaFileObject> subject) {
+        return new JavaSourcesSubject(failureMetadata, subject);
+    }
 }

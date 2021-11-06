@@ -22,10 +22,10 @@ import javax.tools.JavaFileObject;
 
 /** A factory for {@link JavaFileObjectSubject}s. */
 final class JavaFileObjectSubjectFactory
-    implements Subject.Factory<JavaFileObjectSubject, JavaFileObject> {
+        implements Subject.Factory<JavaFileObjectSubject, JavaFileObject> {
 
-  @Override
-  public JavaFileObjectSubject createSubject(FailureMetadata failureMetadata, JavaFileObject that) {
-    return new JavaFileObjectSubject(failureMetadata, that);
-  }
+    @Override
+    public JavaFileObjectSubject createSubject(FailureMetadata failureMetadata, JavaFileObject that) {
+        return new JavaFileObjectSubject(failureMetadata, that);
+    }
 }

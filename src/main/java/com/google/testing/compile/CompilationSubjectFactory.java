@@ -22,8 +22,8 @@ import com.google.common.truth.Truth;
 /** A {@link Truth} subject factory for a {@link Compilation}. */
 final class CompilationSubjectFactory implements Subject.Factory<CompilationSubject, Compilation> {
 
-  @Override
-  public CompilationSubject createSubject(FailureMetadata failureMetadata, Compilation that) {
-    return new CompilationSubject(failureMetadata, that);
-  }
+    @Override
+    public CompilationSubject createSubject(FailureMetadata failureMetadata, Compilation that) {
+        return new CompilationSubject(failureMetadata, that);
+    }
 }

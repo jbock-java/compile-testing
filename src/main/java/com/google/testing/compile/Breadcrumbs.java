@@ -46,125 +46,128 @@ import java.util.List;
  * @author Stephen Pratt
  */
 final class Breadcrumbs {
-  private static final BreadcrumbVisitor BREADCRUMB_VISITOR = new BreadcrumbVisitor();
-  private Breadcrumbs() {}
+    private static final BreadcrumbVisitor BREADCRUMB_VISITOR = new BreadcrumbVisitor();
 
-  /**
-   * Returns a string describing the {@link TreePath} given.
-   */
-  static String describeTreePath(TreePath path) {
-    return Joiner.on("->").join(getBreadcrumbList(path));
-  }
-
-  /**
-   * Returns a list of breadcrumb strings describing the {@link TreePath} given.
-   */
-  static List<String> getBreadcrumbList(TreePath path) {
-    return Lists.reverse(FluentIterable.from(path)
-        .transform(new Function<Tree, String>() {
-          @Override public String apply(Tree t) {
-            return t.accept(BREADCRUMB_VISITOR, null);
-          }
-        }).toList());
-  }
-
-  /**
-   * A {@link SimpleTreeVisitor} for providing a breadcrumb {@code String} for a {@link Tree} node.
-   * The breadcrumb {@code String} will not be unique, but can be used to give context about the
-   * node as it exists within a {@code TreePath}.
-   */
-  @SuppressWarnings("restriction") // Sun APIs usage intended
-  static final class BreadcrumbVisitor extends SimpleTreeVisitor<String, Void> {
-
-    /** Returns a {@code String} describing the {@code Tree.Kind} of the given {@code Tree}. */
-    private String kindString(Tree t) {
-      return t.getKind().toString();
+    private Breadcrumbs() {
     }
 
     /**
-     * Returns a {@code String} describing the {@code Tree.Kind} of the given {@code Tree}.
-     * The string will be specified by the {@code toString()} value of the detail object given.
+     * Returns a string describing the {@link TreePath} given.
      */
-    private String detailedKindString(Tree t, Object detail) {
-      return String.format("%s(%s)", kindString(t), detail);
+    static String describeTreePath(TreePath path) {
+        return Joiner.on("->").join(getBreadcrumbList(path));
     }
 
-    @Override
-    public String defaultAction(Tree t, Void v) {
-      return (t != null) ? kindString(t) : "";
+    /**
+     * Returns a list of breadcrumb strings describing the {@link TreePath} given.
+     */
+    static List<String> getBreadcrumbList(TreePath path) {
+        return Lists.reverse(FluentIterable.from(path)
+                .transform(new Function<Tree, String>() {
+                    @Override
+                    public String apply(Tree t) {
+                        return t.accept(BREADCRUMB_VISITOR, null);
+                    }
+                }).toList());
     }
 
-    @Override
-    public String visitBlock(BlockTree reference, Void v) {
-      return (reference != null)
-          ? detailedKindString(reference, reference.isStatic() ? "static" : "non-static") : "";
-    }
+    /**
+     * A {@link SimpleTreeVisitor} for providing a breadcrumb {@code String} for a {@link Tree} node.
+     * The breadcrumb {@code String} will not be unique, but can be used to give context about the
+     * node as it exists within a {@code TreePath}.
+     */
+    @SuppressWarnings("restriction") // Sun APIs usage intended
+    static final class BreadcrumbVisitor extends SimpleTreeVisitor<String, Void> {
 
-    @Override
-    public String visitBreak(BreakTree reference, Void v) {
-      return (reference != null) ? detailedKindString(reference, reference.getLabel()) : "";
-    }
+        /** Returns a {@code String} describing the {@code Tree.Kind} of the given {@code Tree}. */
+        private String kindString(Tree t) {
+            return t.getKind().toString();
+        }
 
-    @Override
-    public String visitClass(ClassTree reference, Void v) {
-      return (reference != null) ? detailedKindString(reference, reference.getSimpleName()) : "";
-    }
+        /**
+         * Returns a {@code String} describing the {@code Tree.Kind} of the given {@code Tree}.
+         * The string will be specified by the {@code toString()} value of the detail object given.
+         */
+        private String detailedKindString(Tree t, Object detail) {
+            return String.format("%s(%s)", kindString(t), detail);
+        }
 
-    @Override
-    public String visitContinue(ContinueTree reference, Void v) {
-      return (reference != null) ? detailedKindString(reference, reference.getLabel()) : "";
-    }
+        @Override
+        public String defaultAction(Tree t, Void v) {
+            return (t != null) ? kindString(t) : "";
+        }
 
-    @Override
-    public String visitIdentifier(IdentifierTree reference, Void v) {
-      return (reference != null) ? detailedKindString(reference, reference.getName()) : "";
-    }
+        @Override
+        public String visitBlock(BlockTree reference, Void v) {
+            return (reference != null)
+                    ? detailedKindString(reference, reference.isStatic() ? "static" : "non-static") : "";
+        }
 
-    @Override
-    public String visitImport(ImportTree reference, Void v) {
-      return (reference != null) ?
-          detailedKindString(reference, reference.isStatic() ? "static" : "non-static") : "";
-    }
+        @Override
+        public String visitBreak(BreakTree reference, Void v) {
+            return (reference != null) ? detailedKindString(reference, reference.getLabel()) : "";
+        }
 
-    @Override
-    public String visitLabeledStatement(LabeledStatementTree reference, Void v) {
-      return (reference != null) ? detailedKindString(reference, reference.getLabel()) : "";
-    }
+        @Override
+        public String visitClass(ClassTree reference, Void v) {
+            return (reference != null) ? detailedKindString(reference, reference.getSimpleName()) : "";
+        }
 
-    @Override
-    public String visitLiteral(LiteralTree reference, Void v) {
-      return (reference != null) ? detailedKindString(reference, reference.getValue()) : "";
-    }
+        @Override
+        public String visitContinue(ContinueTree reference, Void v) {
+            return (reference != null) ? detailedKindString(reference, reference.getLabel()) : "";
+        }
 
-    @Override
-    public String visitMethod(MethodTree reference, Void v) {
-      return (reference != null) ? detailedKindString(reference, reference.getName()) : "";
-    }
+        @Override
+        public String visitIdentifier(IdentifierTree reference, Void v) {
+            return (reference != null) ? detailedKindString(reference, reference.getName()) : "";
+        }
 
-    @Override
-    public String visitModifiers(ModifiersTree reference, Void v) {
-      return (reference != null) ? detailedKindString(reference, reference.getFlags()) : "";
-    }
+        @Override
+        public String visitImport(ImportTree reference, Void v) {
+            return (reference != null) ?
+                    detailedKindString(reference, reference.isStatic() ? "static" : "non-static") : "";
+        }
 
-    @Override
-    public String visitMemberSelect(MemberSelectTree reference, Void v) {
-      return (reference != null) ? detailedKindString(reference, reference.getIdentifier()) : "";
-    }
+        @Override
+        public String visitLabeledStatement(LabeledStatementTree reference, Void v) {
+            return (reference != null) ? detailedKindString(reference, reference.getLabel()) : "";
+        }
 
-    @Override
-    public String visitPrimitiveType(PrimitiveTypeTree reference, Void v) {
-      return (reference != null)
-          ? detailedKindString(reference, reference.getPrimitiveTypeKind()) : "";
-    }
+        @Override
+        public String visitLiteral(LiteralTree reference, Void v) {
+            return (reference != null) ? detailedKindString(reference, reference.getValue()) : "";
+        }
 
-    @Override
-    public String visitTypeParameter(TypeParameterTree reference, Void v) {
-      return (reference != null) ? detailedKindString(reference, reference.getName()) : "";
-    }
+        @Override
+        public String visitMethod(MethodTree reference, Void v) {
+            return (reference != null) ? detailedKindString(reference, reference.getName()) : "";
+        }
 
-    @Override
-    public String visitVariable(VariableTree reference, Void v) {
-      return (reference != null) ? detailedKindString(reference, reference.getName()) : "";
+        @Override
+        public String visitModifiers(ModifiersTree reference, Void v) {
+            return (reference != null) ? detailedKindString(reference, reference.getFlags()) : "";
+        }
+
+        @Override
+        public String visitMemberSelect(MemberSelectTree reference, Void v) {
+            return (reference != null) ? detailedKindString(reference, reference.getIdentifier()) : "";
+        }
+
+        @Override
+        public String visitPrimitiveType(PrimitiveTypeTree reference, Void v) {
+            return (reference != null)
+                    ? detailedKindString(reference, reference.getPrimitiveTypeKind()) : "";
+        }
+
+        @Override
+        public String visitTypeParameter(TypeParameterTree reference, Void v) {
+            return (reference != null) ? detailedKindString(reference, reference.getName()) : "";
+        }
+
+        @Override
+        public String visitVariable(VariableTree reference, Void v) {
+            return (reference != null) ? detailedKindString(reference, reference.getName()) : "";
+        }
     }
-  }
 }

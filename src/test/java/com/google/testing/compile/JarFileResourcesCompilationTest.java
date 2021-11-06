@@ -15,22 +15,23 @@
  */
 package com.google.testing.compile;
 
-import static com.google.common.truth.Truth.assert_;
-import static com.google.testing.compile.JavaSourceSubjectFactory.javaSource;
-
 import com.google.common.io.Resources;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.URL;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URL;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+
+import static com.google.common.truth.Truth.assert_;
+import static com.google.testing.compile.JavaSourceSubjectFactory.javaSource;
 
 /**
  * An integration test to ensure that testing works when resources are in jar files.
@@ -40,25 +41,25 @@ import org.junit.runners.JUnit4;
  */
 @RunWith(JUnit4.class)
 public class JarFileResourcesCompilationTest {
-  @Rule
-  public TemporaryFolder folder = new TemporaryFolder();
-  private File jarFile;
+    @Rule
+    public TemporaryFolder folder = new TemporaryFolder();
+    private File jarFile;
 
-  @Before
-  public void createJarFile() throws IOException {
-    this.jarFile = folder.newFile("test.jar");
-    JarOutputStream out = new JarOutputStream(new FileOutputStream(jarFile));
-    JarEntry helloWorldEntry = new JarEntry("test/HelloWorld.java");
-    out.putNextEntry(helloWorldEntry);
-    out.write(Resources.toByteArray(Resources.getResource("test/HelloWorld.java")));
-    out.close();
-  }
+    @Before
+    public void createJarFile() throws IOException {
+        this.jarFile = folder.newFile("test.jar");
+        JarOutputStream out = new JarOutputStream(new FileOutputStream(jarFile));
+        JarEntry helloWorldEntry = new JarEntry("test/HelloWorld.java");
+        out.putNextEntry(helloWorldEntry);
+        out.write(Resources.toByteArray(Resources.getResource("test/HelloWorld.java")));
+        out.close();
+    }
 
-  @Test
-  public void compilesResourcesInJarFiles() throws IOException {
-    assert_().about(javaSource())
-      .that(JavaFileObjects.forResource(
-          new URL("jar:" + jarFile.toURI() + "!/test/HelloWorld.java")))
-      .compilesWithoutError();
-  }
+    @Test
+    public void compilesResourcesInJarFiles() throws IOException {
+        assert_().about(javaSource())
+                .that(JavaFileObjects.forResource(
+                        new URL("jar:" + jarFile.toURI() + "!/test/HelloWorld.java")))
+                .compilesWithoutError();
+    }
 }

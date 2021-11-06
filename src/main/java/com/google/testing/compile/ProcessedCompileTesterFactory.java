@@ -26,41 +26,41 @@ import java.io.File;
  */
 public interface ProcessedCompileTesterFactory {
 
-  /**
-   * Adds options that will be passed to the compiler. {@code -Xlint} is the first option, by
-   * default.
-   */
-  ProcessedCompileTesterFactory withCompilerOptions(Iterable<String> options);
+    /**
+     * Adds options that will be passed to the compiler. {@code -Xlint} is the first option, by
+     * default.
+     */
+    ProcessedCompileTesterFactory withCompilerOptions(Iterable<String> options);
 
-  /**
-   * Adds options that will be passed to the compiler. {@code -Xlint} is the first option, by
-   * default.
-   */
-  ProcessedCompileTesterFactory withCompilerOptions(String... options);
+    /**
+     * Adds options that will be passed to the compiler. {@code -Xlint} is the first option, by
+     * default.
+     */
+    ProcessedCompileTesterFactory withCompilerOptions(String... options);
 
-  /**
-   * Attempts to extract the classpath from the classpath of the Classloader argument, including all
-   * its parents up to (and including) the System Classloader.
-   *
-   * <p>If not specified, we will use the System classpath for compilation.
-   *
-   * @deprecated prefer {@link #withClasspath(Iterable)}. This method only supports {@link
-   *     java.net.URLClassLoader} and the default system classloader, and {@link File}s are usually
-   *     a more natural way to expression compilation classpaths than class loaders.
-   */
-  @Deprecated
-  ProcessedCompileTesterFactory withClasspathFrom(ClassLoader classloader);
+    /**
+     * Attempts to extract the classpath from the classpath of the Classloader argument, including all
+     * its parents up to (and including) the System Classloader.
+     *
+     * <p>If not specified, we will use the System classpath for compilation.
+     *
+     * @deprecated prefer {@link #withClasspath(Iterable)}. This method only supports {@link
+     *     java.net.URLClassLoader} and the default system classloader, and {@link File}s are usually
+     *     a more natural way to expression compilation classpaths than class loaders.
+     */
+    @Deprecated
+    ProcessedCompileTesterFactory withClasspathFrom(ClassLoader classloader);
 
-  /**
-   * Sets the compilation classpath.
-   *
-   * <p>If not specified, we will use the System classpath for compilation.
-   */
-  ProcessedCompileTesterFactory withClasspath(Iterable<File> classPath);
+    /**
+     * Sets the compilation classpath.
+     *
+     * <p>If not specified, we will use the System classpath for compilation.
+     */
+    ProcessedCompileTesterFactory withClasspath(Iterable<File> classPath);
 
-  /** Adds {@linkplain Processor annotation processors} to the compilation being tested. */
-  CompileTester processedWith(Processor first, Processor... rest);
+    /** Adds {@linkplain Processor annotation processors} to the compilation being tested. */
+    CompileTester processedWith(Processor first, Processor... rest);
 
-  /** Adds {@linkplain Processor annotation processors} to the compilation being tested. */
-  CompileTester processedWith(Iterable<? extends Processor> processors);
+    /** Adds {@linkplain Processor annotation processors} to the compilation being tested. */
+    CompileTester processedWith(Iterable<? extends Processor> processors);
 }

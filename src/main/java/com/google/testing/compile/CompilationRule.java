@@ -47,89 +47,89 @@ import static com.google.testing.compile.Compiler.javac;
  * @author Gregory Kick
  */
 public final class CompilationRule implements TestRule {
-  private static final JavaFileObject DUMMY =
-      JavaFileObjects.forSourceLines("Dummy", "final class Dummy {}");
+    private static final JavaFileObject DUMMY =
+            JavaFileObjects.forSourceLines("Dummy", "final class Dummy {}");
 
-  private Elements elements;
-  private Types types;
-
-  @Override
-  public Statement apply(final Statement base, Description description) {
-    return new Statement() {
-      @Override
-      public void evaluate() throws Throwable {
-        EvaluatingProcessor evaluatingProcessor = new EvaluatingProcessor(base);
-        Compilation compilation = javac().withProcessors(evaluatingProcessor).compile(DUMMY);
-        checkState(compilation.status().equals(SUCCESS), compilation);
-        evaluatingProcessor.throwIfStatementThrew();
-      }
-    };
-  }
-  
-  /**
-   * Returns the {@link Elements} instance associated with the current execution of the rule.
-   *
-   * @throws IllegalStateException if this method is invoked outside the execution of the rule.
-   */
-  public Elements getElements() {
-    checkState(elements != null, "Not running within the rule");
-    return elements;
-  }
-
-  /**
-   * Returns the {@link Types} instance associated with the current execution of the rule.
-   *
-   * @throws IllegalStateException if this method is invoked outside the execution of the rule.
-   */
-  public Types getTypes() {
-    checkState(types != null, "Not running within the rule");
-    return types;
-  }
-
-  final class EvaluatingProcessor extends AbstractProcessor {
-
-    final Statement base;
-    Throwable thrown;
-
-    EvaluatingProcessor(Statement base) {
-      this.base = base;
-    }
+    private Elements elements;
+    private Types types;
 
     @Override
-    public SourceVersion getSupportedSourceVersion() {
-      return SourceVersion.latest();
+    public Statement apply(final Statement base, Description description) {
+        return new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                EvaluatingProcessor evaluatingProcessor = new EvaluatingProcessor(base);
+                Compilation compilation = javac().withProcessors(evaluatingProcessor).compile(DUMMY);
+                checkState(compilation.status().equals(SUCCESS), compilation);
+                evaluatingProcessor.throwIfStatementThrew();
+            }
+        };
     }
 
-    @Override
-    public Set<String> getSupportedAnnotationTypes() {
-      return ImmutableSet.of("*");
+    /**
+     * Returns the {@link Elements} instance associated with the current execution of the rule.
+     *
+     * @throws IllegalStateException if this method is invoked outside the execution of the rule.
+     */
+    public Elements getElements() {
+        checkState(elements != null, "Not running within the rule");
+        return elements;
     }
 
-    @Override
-    public synchronized void init(ProcessingEnvironment processingEnv) {
-      super.init(processingEnv);
-      elements = processingEnv.getElementUtils();
-      types = processingEnv.getTypeUtils();
+    /**
+     * Returns the {@link Types} instance associated with the current execution of the rule.
+     *
+     * @throws IllegalStateException if this method is invoked outside the execution of the rule.
+     */
+    public Types getTypes() {
+        checkState(types != null, "Not running within the rule");
+        return types;
     }
 
-    @Override
-    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-      // just run the test on the last round after compilation is over
-      if (roundEnv.processingOver()) {
-        try {
-          base.evaluate();
-        } catch (Throwable e) {
-          thrown = e;
+    final class EvaluatingProcessor extends AbstractProcessor {
+
+        final Statement base;
+        Throwable thrown;
+
+        EvaluatingProcessor(Statement base) {
+            this.base = base;
         }
-      }
-      return false;
-    }
 
-    /** Throws what the base {@link Statement} threw, if anything. */
-    void throwIfStatementThrew() throws Throwable {
-      if (thrown != null) {
-        throw thrown;
-      }
+        @Override
+        public SourceVersion getSupportedSourceVersion() {
+            return SourceVersion.latest();
+        }
+
+        @Override
+        public Set<String> getSupportedAnnotationTypes() {
+            return ImmutableSet.of("*");
+        }
+
+        @Override
+        public synchronized void init(ProcessingEnvironment processingEnv) {
+            super.init(processingEnv);
+            elements = processingEnv.getElementUtils();
+            types = processingEnv.getTypeUtils();
+        }
+
+        @Override
+        public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+            // just run the test on the last round after compilation is over
+            if (roundEnv.processingOver()) {
+                try {
+                    base.evaluate();
+                } catch (Throwable e) {
+                    thrown = e;
+                }
+            }
+            return false;
+        }
+
+        /** Throws what the base {@link Statement} threw, if anything. */
+        void throwIfStatementThrew() throws Throwable {
+            if (thrown != null) {
+                throw thrown;
+            }
+        }
     }
-  }
 }

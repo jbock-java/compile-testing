@@ -16,11 +16,8 @@
 
 package com.google.testing.compile;
 
-import static java.lang.annotation.RetentionPolicy.SOURCE;
-
 import com.google.common.collect.ImmutableSet;
-import java.lang.annotation.Retention;
-import java.util.Set;
+
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
@@ -28,6 +25,10 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
+import java.lang.annotation.Retention;
+import java.util.Set;
+
+import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 /**
  * Annotated elements will have a diagnostic message whose {@linkplain Kind kind} is determined by a
@@ -35,34 +36,34 @@ import javax.tools.Diagnostic.Kind;
  */
 @Retention(SOURCE)
 public @interface DiagnosticMessage {
-  /**
-   * Adds diagnostic messages of a specified {@linkplain Kind kind} to elements annotated with
-   * {@link DiagnosticMessage}.
-   */
-  class Processor extends AbstractProcessor {
+    /**
+     * Adds diagnostic messages of a specified {@linkplain Kind kind} to elements annotated with
+     * {@link DiagnosticMessage}.
+     */
+    class Processor extends AbstractProcessor {
 
-    private final Diagnostic.Kind kind;
+        private final Diagnostic.Kind kind;
 
-    Processor(Diagnostic.Kind kind) {
-      this.kind = kind;
+        Processor(Diagnostic.Kind kind) {
+            this.kind = kind;
+        }
+
+        @Override
+        public SourceVersion getSupportedSourceVersion() {
+            return SourceVersion.latest();
+        }
+
+        @Override
+        public Set<String> getSupportedAnnotationTypes() {
+            return ImmutableSet.of(DiagnosticMessage.class.getCanonicalName());
+        }
+
+        @Override
+        public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+            for (Element element : roundEnv.getElementsAnnotatedWith(DiagnosticMessage.class)) {
+                processingEnv.getMessager().printMessage(kind, "this is a message", element);
+            }
+            return true;
+        }
     }
-
-    @Override
-    public SourceVersion getSupportedSourceVersion() {
-      return SourceVersion.latest();
-    }
-
-    @Override
-    public Set<String> getSupportedAnnotationTypes() {
-      return ImmutableSet.of(DiagnosticMessage.class.getCanonicalName());
-    }
-
-    @Override
-    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-      for (Element element : roundEnv.getElementsAnnotatedWith(DiagnosticMessage.class)) {
-        processingEnv.getMessager().printMessage(kind, "this is a message", element);
-      }
-      return true;
-    }
-  }
 }

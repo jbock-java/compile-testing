@@ -16,7 +16,6 @@
 
 package com.google.testing.compile;
 
-import java.util.Set;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -24,34 +23,35 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
+import java.util.Set;
 
 final class FailingGeneratingProcessor extends AbstractProcessor {
-  static final String GENERATED_CLASS_NAME = GeneratingProcessor.GENERATED_CLASS_NAME;
-  static final String GENERATED_SOURCE = GeneratingProcessor.GENERATED_SOURCE;
-  static final String ERROR_MESSAGE = "expected error!";
-  final GeneratingProcessor delegate = new GeneratingProcessor();
-  Messager messager;
+    static final String GENERATED_CLASS_NAME = GeneratingProcessor.GENERATED_CLASS_NAME;
+    static final String GENERATED_SOURCE = GeneratingProcessor.GENERATED_SOURCE;
+    static final String ERROR_MESSAGE = "expected error!";
+    final GeneratingProcessor delegate = new GeneratingProcessor();
+    Messager messager;
 
-  @Override
-  public synchronized void init(ProcessingEnvironment processingEnv) {
-    delegate.init(processingEnv);
-    this.messager = processingEnv.getMessager();
-  }
+    @Override
+    public synchronized void init(ProcessingEnvironment processingEnv) {
+        delegate.init(processingEnv);
+        this.messager = processingEnv.getMessager();
+    }
 
-  @Override
-  public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-    delegate.process(annotations, roundEnv);
-    messager.printMessage(Kind.ERROR, ERROR_MESSAGE);
-    return false;
-  }
+    @Override
+    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        delegate.process(annotations, roundEnv);
+        messager.printMessage(Kind.ERROR, ERROR_MESSAGE);
+        return false;
+    }
 
-  @Override
-  public Set<String> getSupportedAnnotationTypes() {
-    return delegate.getSupportedAnnotationTypes();
-  }
+    @Override
+    public Set<String> getSupportedAnnotationTypes() {
+        return delegate.getSupportedAnnotationTypes();
+    }
 
-  @Override
-  public SourceVersion getSupportedSourceVersion() {
-    return delegate.getSupportedSourceVersion();
-  }
+    @Override
+    public SourceVersion getSupportedSourceVersion() {
+        return delegate.getSupportedSourceVersion();
+    }
 }

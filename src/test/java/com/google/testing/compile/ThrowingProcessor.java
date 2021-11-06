@@ -17,26 +17,27 @@
 package com.google.testing.compile;
 
 import com.google.common.collect.ImmutableSet;
-import java.util.Set;
+
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.TypeElement;
+import java.util.Set;
 
 final class ThrowingProcessor extends AbstractProcessor {
 
-  private final RuntimeException e;
+    private final RuntimeException e;
 
-  ThrowingProcessor(RuntimeException e) {
-    this.e = e;
-  }
+    ThrowingProcessor(RuntimeException e) {
+        this.e = e;
+    }
 
-  @Override
-  public Set<String> getSupportedAnnotationTypes() {
-    return ImmutableSet.of("*");
-  }
+    @Override
+    public Set<String> getSupportedAnnotationTypes() {
+        return ImmutableSet.of("*");
+    }
 
-  @Override
-  public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-    throw e;
-  }
+    @Override
+    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        throw e;
+    }
 }

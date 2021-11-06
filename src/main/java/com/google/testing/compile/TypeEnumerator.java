@@ -37,74 +37,77 @@ import static com.google.common.base.MoreObjects.firstNonNull;
  * @author Stephen Pratt
  */
 final class TypeEnumerator {
-  private static final TypeScanner nameVisitor = new TypeScanner();
-  private TypeEnumerator() {}
+    private static final TypeScanner nameVisitor = new TypeScanner();
 
-  /**
-   * Returns a set of strings containing the fully qualified names of all
-   * the types that are declared by the given CompilationUnitTree
-   */
-  static ImmutableSet<String> getTopLevelTypes(CompilationUnitTree t) {
-    return ImmutableSet.copyOf(nameVisitor.scan(t, null));
-  }
-
-  /** A {@link TreeScanner} for determining type declarations */
-  @SuppressWarnings("restriction") // Sun APIs usage intended
-  static final class TypeScanner extends TreeScanner<Set<String>, Void> {
-    @Override
-    public Set<String> scan(Tree node, Void v) {
-      return firstNonNull(super.scan(node, v), ImmutableSet.<String>of());
+    private TypeEnumerator() {
     }
 
-    @Override
-    public Set<String> reduce(Set<String> r1, Set<String> r2) {
-      return Sets.union(r1, r2);
+    /**
+     * Returns a set of strings containing the fully qualified names of all
+     * the types that are declared by the given CompilationUnitTree
+     */
+    static ImmutableSet<String> getTopLevelTypes(CompilationUnitTree t) {
+        return ImmutableSet.copyOf(nameVisitor.scan(t, null));
     }
 
-    @Override
-    public Set<String> visitClass(ClassTree reference, Void v) {
-      return ImmutableSet.of(reference.getSimpleName().toString());
-    }
+    /** A {@link TreeScanner} for determining type declarations */
+    @SuppressWarnings("restriction") // Sun APIs usage intended
+    static final class TypeScanner extends TreeScanner<Set<String>, Void> {
+        @Override
+        public Set<String> scan(Tree node, Void v) {
+            return firstNonNull(super.scan(node, v), ImmutableSet.<String>of());
+        }
 
-    @Override
-    public Set<String> visitExpressionStatement(
-        ExpressionStatementTree reference, Void v) {
-      return scan(reference.getExpression(), v);
-    }
+        @Override
+        public Set<String> reduce(Set<String> r1, Set<String> r2) {
+            return Sets.union(r1, r2);
+        }
 
-    @Override
-    public Set<String> visitIdentifier(IdentifierTree reference, Void v) {
-      return ImmutableSet.of(reference.getName().toString());
-    }
+        @Override
+        public Set<String> visitClass(ClassTree reference, Void v) {
+            return ImmutableSet.of(reference.getSimpleName().toString());
+        }
 
-    @Override
-    public Set<String> visitMemberSelect(MemberSelectTree reference, Void v) {
-      Set<String> expressionSet = scan(reference.getExpression(), v);
-      if (expressionSet.size() != 1) {
-        throw new AssertionError("Internal error in NameFinder. Expected to find exactly one "
-            + "identifier in the expression set. Found " + expressionSet);
-      }
-      String expressionStr = expressionSet.iterator().next();
-      return ImmutableSet.of(String.format("%s.%s", expressionStr, reference.getIdentifier()));
-    }
+        @Override
+        public Set<String> visitExpressionStatement(
+                ExpressionStatementTree reference, Void v) {
+            return scan(reference.getExpression(), v);
+        }
 
-    @Override
-    public Set<String> visitCompilationUnit(CompilationUnitTree reference, Void v) {
-      Set<String> packageSet = reference.getPackageName() == null ?
-          ImmutableSet.of("") : scan(reference.getPackageName(), v);
-      if (packageSet.size() != 1) {
-        throw new AssertionError("Internal error in NameFinder. Expected to find at most one " +
-            "package identifier. Found " + packageSet);
-      }
-      final String packageName = packageSet.isEmpty() ? "" : packageSet.iterator().next();
-      Set<String> typeDeclSet = firstNonNull(scan(reference.getTypeDecls(), v), ImmutableSet.of());
-      return FluentIterable.from(typeDeclSet)
-          .transform(new Function<String, String>() {
-            @Override public String apply(String typeName) {
-              return packageName.isEmpty() ? typeName :
-                  String.format("%s.%s", packageName, typeName);
+        @Override
+        public Set<String> visitIdentifier(IdentifierTree reference, Void v) {
+            return ImmutableSet.of(reference.getName().toString());
+        }
+
+        @Override
+        public Set<String> visitMemberSelect(MemberSelectTree reference, Void v) {
+            Set<String> expressionSet = scan(reference.getExpression(), v);
+            if (expressionSet.size() != 1) {
+                throw new AssertionError("Internal error in NameFinder. Expected to find exactly one "
+                        + "identifier in the expression set. Found " + expressionSet);
             }
-          }).toSet();
+            String expressionStr = expressionSet.iterator().next();
+            return ImmutableSet.of(String.format("%s.%s", expressionStr, reference.getIdentifier()));
+        }
+
+        @Override
+        public Set<String> visitCompilationUnit(CompilationUnitTree reference, Void v) {
+            Set<String> packageSet = reference.getPackageName() == null ?
+                    ImmutableSet.of("") : scan(reference.getPackageName(), v);
+            if (packageSet.size() != 1) {
+                throw new AssertionError("Internal error in NameFinder. Expected to find at most one " +
+                        "package identifier. Found " + packageSet);
+            }
+            final String packageName = packageSet.isEmpty() ? "" : packageSet.iterator().next();
+            Set<String> typeDeclSet = firstNonNull(scan(reference.getTypeDecls(), v), ImmutableSet.of());
+            return FluentIterable.from(typeDeclSet)
+                    .transform(new Function<String, String>() {
+                        @Override
+                        public String apply(String typeName) {
+                            return packageName.isEmpty() ? typeName :
+                                    String.format("%s.%s", packageName, typeName);
+                        }
+                    }).toSet();
+        }
     }
-  }
 }

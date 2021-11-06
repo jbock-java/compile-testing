@@ -18,26 +18,27 @@ package com.google.testing.compile;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
-import java.util.Set;
+
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
+import java.util.Set;
 
 final class NonGeneratingProcessor extends AbstractProcessor {
-  @CanIgnoreReturnValue
-  @Override
-  public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-    return false;
-  }
+    @CanIgnoreReturnValue
+    @Override
+    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        return false;
+    }
 
-  @Override
-  public Set<String> getSupportedAnnotationTypes() {
-    return ImmutableSet.of("*");
-  }
+    @Override
+    public Set<String> getSupportedAnnotationTypes() {
+        return ImmutableSet.of("*");
+    }
 
-  @Override
-  public SourceVersion getSupportedSourceVersion() {
-    return SourceVersion.latestSupported();
-  }
+    @Override
+    public SourceVersion getSupportedSourceVersion() {
+        return SourceVersion.latestSupported();
+    }
 }

@@ -20,11 +20,11 @@ package com.google.testing.compile;
  */
 @SuppressWarnings("serial")
 public class CompilationFailureException extends RuntimeException {
-  CompilationFailureException(Compilation compilation) {
-    super(
-        compilation
-            + " failed, but did not report any error diagnostics or throw any exceptions. "
-            + "This behavior has been observed in older versions of javac, which swallow "
-            + "exceptions and log them on System.err. Check there for more information.");
-  }
+    CompilationFailureException(Compilation compilation) {
+        super(
+                compilation
+                        + " failed, but did not report any error diagnostics or throw any exceptions. "
+                        + "This behavior has been observed in older versions of javac, which swallow "
+                        + "exceptions and log them on System.err. Check there for more information.");
+    }
 }

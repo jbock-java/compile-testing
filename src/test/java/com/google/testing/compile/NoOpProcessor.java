@@ -17,37 +17,38 @@
 package com.google.testing.compile;
 
 import com.google.common.collect.ImmutableSet;
-import java.util.Map;
-import java.util.Set;
+
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
+import java.util.Map;
+import java.util.Set;
 
 final class NoOpProcessor extends AbstractProcessor {
-  boolean invoked = false;
-  Map<String, String> options;
+    boolean invoked = false;
+    Map<String, String> options;
 
-  @Override
-  public synchronized void init(ProcessingEnvironment processingEnv) {
-    super.init(processingEnv);
-    options = processingEnv.getOptions();
-  }
+    @Override
+    public synchronized void init(ProcessingEnvironment processingEnv) {
+        super.init(processingEnv);
+        options = processingEnv.getOptions();
+    }
 
-  @Override
-  public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-    invoked = true;
-    return false;
-  }
+    @Override
+    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        invoked = true;
+        return false;
+    }
 
-  @Override
-  public Set<String> getSupportedAnnotationTypes() {
-    return ImmutableSet.of("*");
-  }
+    @Override
+    public Set<String> getSupportedAnnotationTypes() {
+        return ImmutableSet.of("*");
+    }
 
-  @Override
-  public SourceVersion getSupportedSourceVersion() {
-    return SourceVersion.latestSupported();
-  }
+    @Override
+    public SourceVersion getSupportedSourceVersion() {
+        return SourceVersion.latestSupported();
+    }
 }

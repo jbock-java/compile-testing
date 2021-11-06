@@ -27,16 +27,17 @@ import javax.tools.JavaFileObject;
  * @author Gregory Kick
  */
 public final class JavaSourceSubjectFactory
-    implements Subject.Factory<JavaSourcesSubject.SingleSourceAdapter, JavaFileObject> {
-  public static JavaSourceSubjectFactory javaSource() {
-    return new JavaSourceSubjectFactory();
-  }
+        implements Subject.Factory<JavaSourcesSubject.SingleSourceAdapter, JavaFileObject> {
+    public static JavaSourceSubjectFactory javaSource() {
+        return new JavaSourceSubjectFactory();
+    }
 
-  private JavaSourceSubjectFactory() {}
+    private JavaSourceSubjectFactory() {
+    }
 
-  @Override
-  public JavaSourcesSubject.SingleSourceAdapter createSubject(FailureMetadata failureMetadata,
-      JavaFileObject subject) {
-    return new JavaSourcesSubject.SingleSourceAdapter(failureMetadata, subject);
-  }
+    @Override
+    public JavaSourcesSubject.SingleSourceAdapter createSubject(FailureMetadata failureMetadata,
+                                                                JavaFileObject subject) {
+        return new JavaSourcesSubject.SingleSourceAdapter(failureMetadata, subject);
+    }
 }

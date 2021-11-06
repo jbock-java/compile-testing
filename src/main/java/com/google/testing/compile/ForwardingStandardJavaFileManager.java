@@ -30,65 +30,65 @@ import java.util.Collection;
  * override some of these methods and might also provide additional fields and methods.
  */
 public class ForwardingStandardJavaFileManager
-    extends ForwardingJavaFileManager<StandardJavaFileManager> implements StandardJavaFileManager {
+        extends ForwardingJavaFileManager<StandardJavaFileManager> implements StandardJavaFileManager {
 
-  /**
-   * Creates a new instance of ForwardingStandardJavaFileManager.
-   *
-   * @param fileManager delegate to this file manager
-   */
-  protected ForwardingStandardJavaFileManager(StandardJavaFileManager fileManager) {
-    super(fileManager);
-  }
-
-  @Override
-  public Iterable<? extends JavaFileObject> getJavaFileObjectsFromFiles(
-      Iterable<? extends File> files) {
-    return fileManager.getJavaFileObjectsFromFiles(files);
-  }
-
-  @Override
-  public Iterable<? extends JavaFileObject> getJavaFileObjects(File... files) {
-    return fileManager.getJavaFileObjects(files);
-  }
-
-  @Override
-  public Iterable<? extends JavaFileObject> getJavaFileObjects(String... names) {
-    return fileManager.getJavaFileObjects(names);
-  }
-
-  @Override
-  public Iterable<? extends JavaFileObject> getJavaFileObjectsFromStrings(Iterable<String> names) {
-    return fileManager.getJavaFileObjectsFromStrings(names);
-  }
-
-  @Override
-  public void setLocation(Location location, Iterable<? extends File> path) throws IOException {
-    fileManager.setLocation(location, path);
-  }
-
-  @Override
-  public Iterable<? extends File> getLocation(Location location) {
-    return fileManager.getLocation(location);
-  }
-
-  // @Override for JDK 9 only
-  public void setLocationFromPaths(Location location, Collection<? extends Path> searchpath)
-      throws IOException {
-    Method setLocationFromPaths;
-    try {
-      setLocationFromPaths =
-          fileManager
-              .getClass()
-              .getMethod("setLocationFromPaths", Location.class, Collection.class);
-    } catch (ReflectiveOperationException e) {
-      // JDK < 9
-      return;
+    /**
+     * Creates a new instance of ForwardingStandardJavaFileManager.
+     *
+     * @param fileManager delegate to this file manager
+     */
+    protected ForwardingStandardJavaFileManager(StandardJavaFileManager fileManager) {
+        super(fileManager);
     }
-    try {
-      setLocationFromPaths.invoke(fileManager, location, searchpath);
-    } catch (ReflectiveOperationException e) {
-      throw new LinkageError(e.getMessage(), e);
+
+    @Override
+    public Iterable<? extends JavaFileObject> getJavaFileObjectsFromFiles(
+            Iterable<? extends File> files) {
+        return fileManager.getJavaFileObjectsFromFiles(files);
     }
-  }
+
+    @Override
+    public Iterable<? extends JavaFileObject> getJavaFileObjects(File... files) {
+        return fileManager.getJavaFileObjects(files);
+    }
+
+    @Override
+    public Iterable<? extends JavaFileObject> getJavaFileObjects(String... names) {
+        return fileManager.getJavaFileObjects(names);
+    }
+
+    @Override
+    public Iterable<? extends JavaFileObject> getJavaFileObjectsFromStrings(Iterable<String> names) {
+        return fileManager.getJavaFileObjectsFromStrings(names);
+    }
+
+    @Override
+    public void setLocation(Location location, Iterable<? extends File> path) throws IOException {
+        fileManager.setLocation(location, path);
+    }
+
+    @Override
+    public Iterable<? extends File> getLocation(Location location) {
+        return fileManager.getLocation(location);
+    }
+
+    // @Override for JDK 9 only
+    public void setLocationFromPaths(Location location, Collection<? extends Path> searchpath)
+            throws IOException {
+        Method setLocationFromPaths;
+        try {
+            setLocationFromPaths =
+                    fileManager
+                            .getClass()
+                            .getMethod("setLocationFromPaths", Location.class, Collection.class);
+        } catch (ReflectiveOperationException e) {
+            // JDK < 9
+            return;
+        }
+        try {
+            setLocationFromPaths.invoke(fileManager, location, searchpath);
+        } catch (ReflectiveOperationException e) {
+            throw new LinkageError(e.getMessage(), e);
+        }
+    }
 }
