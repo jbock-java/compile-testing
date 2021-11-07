@@ -15,7 +15,6 @@
  */
 package com.google.testing.compile;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -26,7 +25,6 @@ import com.google.common.truth.Subject;
 import com.google.testing.compile.CompilationSubject.DiagnosticAtColumn;
 import com.google.testing.compile.CompilationSubject.DiagnosticInFile;
 import com.google.testing.compile.CompilationSubject.DiagnosticOnLine;
-import com.sun.source.tree.CompilationUnitTree;
 
 import javax.annotation.processing.Processor;
 import javax.tools.JavaFileManager;
@@ -37,16 +35,12 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collector;
 
 import static com.google.common.truth.Fact.simpleFact;
 import static com.google.common.truth.Truth.assertAbout;
 import static com.google.testing.compile.CompilationSubject.compilations;
 import static com.google.testing.compile.Compiler.javac;
 import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
-import static com.google.testing.compile.TypeEnumerator.getTopLevelTypes;
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toList;
 
 /**
  * A <a href="https://github.com/truth0/truth">Truth</a> {@link Subject} that evaluates the result
@@ -134,76 +128,6 @@ public final class JavaSourcesSubject extends Subject
             this.processors = ImmutableSet.copyOf(processors);
         }
 
-        /** Called when the {@code generatesSources()} verb fails with no diff candidates. */
-        private void failNoCandidates(
-                ImmutableSet<String> expectedTypes,
-                CompilationUnitTree expectedTree,
-                ImmutableList<TypedCompilationUnit> actualTrees) {
-            String generatedTypesReport =
-                    Joiner.on('\n')
-                            .join(
-                                    actualTrees.stream()
-                                            .map(
-                                                    generated ->
-                                                            String.format(
-                                                                    "- %s in <%s>",
-                                                                    generated.types(),
-                                                                    generated.tree().getSourceFile().toUri().getPath()))
-                                            .collect(toList()));
-            failWithoutActual(
-                    simpleFact(
-                            Joiner.on('\n')
-                                    .join(
-                                            "",
-                                            "An expected source declared one or more top-level types that were not "
-                                                    + "present.",
-                                            "",
-                                            String.format("Expected top-level types: <%s>", expectedTypes),
-                                            String.format(
-                                                    "Declared by expected file: <%s>",
-                                                    expectedTree.getSourceFile().toUri().getPath()),
-                                            "",
-                                            "The top-level types that were present are as follows: ",
-                                            "",
-                                            generatedTypesReport,
-                                            "")));
-        }
-
-        /** Called when the {@code generatesSources()} verb fails with a diff candidate. */
-        private void failWithCandidate(
-                JavaFileObject expectedSource, JavaFileObject actualSource, String diffReport) {
-            try {
-                failWithoutActual(
-                        simpleFact(
-                                Joiner.on('\n')
-                                        .join(
-                                                "",
-                                                "Source declared the same top-level types of an expected source, but",
-                                                "didn't match exactly.",
-                                                "",
-                                                String.format("Expected file: <%s>", expectedSource.toUri().getPath()),
-                                                String.format("Actual file: <%s>", actualSource.toUri().getPath()),
-                                                "",
-                                                "Diffs:",
-                                                "======",
-                                                "",
-                                                diffReport,
-                                                "",
-                                                "Expected Source: ",
-                                                "================",
-                                                "",
-                                                expectedSource.getCharContent(false).toString(),
-                                                "",
-                                                "Actual Source:",
-                                                "=================",
-                                                "",
-                                                actualSource.getCharContent(false).toString())));
-            } catch (IOException e) {
-                throw new IllegalStateException(
-                        "Couldn't read from JavaFileObject when it was already " + "in memory.", e);
-            }
-        }
-
         @Override
         public SuccessfulCompilationClause compilesWithoutError() {
             Compilation compilation = compilation();
@@ -234,16 +158,6 @@ public final class JavaSourcesSubject extends Subject
                 compiler = compiler.withClasspath(classPath);
             }
             return compiler.compile(actual);
-        }
-    }
-
-    abstract static class TypedCompilationUnit {
-        abstract CompilationUnitTree tree();
-
-        abstract ImmutableSet<String> types();
-
-        static TypedCompilationUnit create(CompilationUnitTree tree) {
-            return new AutoValue_JavaSourcesSubject_TypedCompilationUnit(tree, getTopLevelTypes(tree));
         }
     }
 
@@ -435,12 +349,6 @@ public final class JavaSourcesSubject extends Subject
         }
     }
 
-    final class CompilationBuilder extends GeneratedCompilationBuilder<CompilationBuilder> {
-        CompilationBuilder(Compilation compilation) {
-            super(compilation);
-        }
-    }
-
     private final class UnsuccessfulCompilationBuilder
             extends CompilationWithWarningsBuilder<UnsuccessfulCompilationClause>
             implements UnsuccessfulCompilationClause {
@@ -480,10 +388,6 @@ public final class JavaSourcesSubject extends Subject
                                 .add(javaFileObject)
                                 .add(javaFileObjects)
                                 .build());
-    }
-
-    private static <T> Collector<T, ?, ImmutableList<T>> toImmutableList() {
-        return collectingAndThen(toList(), ImmutableList::copyOf);
     }
 
     public static final class SingleSourceAdapter extends Subject

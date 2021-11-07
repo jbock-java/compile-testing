@@ -15,6 +15,7 @@
  */
 package com.google.testing.compile;
 
+import com.google.auto.value.AutoValue;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
 import com.google.common.base.StandardSystemProperty;
@@ -46,6 +47,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static javax.tools.ToolProvider.getSystemJavaCompiler;
 
 /** An object that can {@link #compile} Java source files. */
+@AutoValue
 // clashes with java.lang.Compiler (which is deprecated for removal in 9)
 @SuppressWarnings("JavaLangClash")
 public abstract class Compiler {
