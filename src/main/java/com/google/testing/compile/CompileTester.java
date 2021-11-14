@@ -113,7 +113,15 @@ public interface CompileTester {
     /**
      * The clause in the fluent API that checks that files were generated.
      */
-    public interface GeneratedPredicateClause<T> {
+    interface GeneratedPredicateClause<T> {
+
+        /**
+         * <p><b>DO NOT USE</b>
+         *
+         * @deprecated use {@link #generatesSources(String, JavaFileObject)} instead
+         */
+        @Deprecated(forRemoval = true)
+        T generatesSources(JavaFileObject first, JavaFileObject... rest);
 
         /**
          * Checks that the generated file file with a line content equivalent to

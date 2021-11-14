@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
 
+import static com.google.common.collect.Iterables.getOnlyElement;
 import static com.google.common.truth.Fact.fact;
 import static com.google.common.truth.Truth.assertAbout;
 import static com.google.testing.compile.JavaFileObjects.asByteSource;
@@ -113,6 +114,30 @@ public final class JavaFileObjectSubject extends Subject {
      */
     public StringSubject contentsAsUtf8String() {
         return contentsAsString(UTF_8);
+    }
+
+    /**
+     * <p><b>DO NOT USE</b>
+     *
+     * Always throws {@link UnsupportedOperationException}.
+     *
+     * @deprecated use {@link #containsExactLines(List)} instead
+     */
+    @Deprecated(forRemoval = true)
+    public void hasSourceEquivalentTo(JavaFileObject expectedSource) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * <p><b>DO NOT USE</b>
+     *
+     * Always throws {@link UnsupportedOperationException}.
+     *
+     * @deprecated use {@link #containsLinesIn(List)} instead
+     */
+    @Deprecated(forRemoval = true)
+    public void containsElementsIn(JavaFileObject expectedPattern) {
+        throw new UnsupportedOperationException();
     }
 
     /**

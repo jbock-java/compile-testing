@@ -291,6 +291,11 @@ public final class JavaSourcesSubject extends Subject
         }
 
         @Override
+        public final T generatesSources(JavaFileObject first, JavaFileObject... rest) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public T generatesSources(String qualifiedName, JavaFileObject file) {
             try {
                 List<String> expectation = Arrays.asList(file.getCharContent(false)
