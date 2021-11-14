@@ -21,6 +21,7 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import java.nio.charset.Charset;
+import java.util.List;
 
 /**
  * The root of the fluent API for testing the result of compilation.
@@ -120,15 +121,30 @@ public interface CompileTester {
          *
          * @deprecated use {@link #generatesSources(String, JavaFileObject)} instead
          */
-        @Deprecated(forRemoval = true)
+        @Deprecated
         T generatesSources(JavaFileObject first, JavaFileObject... rest);
 
         /**
-         * Checks that the generated file file with a line content equivalent to
+         * Checks that the generated file with a line content equivalent to
          * the contents of {@code file} was generated for the given
          * {@code qualifiedName}.
          */
         T generatesSources(String qualifiedName, JavaFileObject file);
+
+        /**
+         * Checks that the generated file with a line content equivalent to
+         * {@code expectation} was generated for the given
+         * {@code qualifiedName}.
+         */
+        T generatesSources(String qualifiedName, List<String> expectation);
+
+        /**
+         * Checks that the generated file with a line content equivalent to
+         * {@code expectation} was generated for the given
+         * {@code qualifiedName}.
+         */
+        T generatesSources(String qualifiedName, String... expectation);
+
 
         /**
          * Checks that a file with equivalent kind and content was generated for each of the given

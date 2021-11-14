@@ -38,7 +38,6 @@ import java.util.List;
 
 import static com.google.common.truth.Fact.simpleFact;
 import static com.google.common.truth.Truth.assertAbout;
-import static com.google.testing.compile.CompilationSubject.assertThat;
 import static com.google.testing.compile.CompilationSubject.compilations;
 import static com.google.testing.compile.Compiler.javac;
 import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
@@ -301,15 +300,25 @@ public final class JavaSourcesSubject extends Subject
                 List<String> expectation = Arrays.asList(file.getCharContent(false)
                         .toString()
                         .split("\\R", -1));
-                CompilationSubject.assertThat(compilation).succeeded();
-                CompilationSubject.assertThat(compilation)
-                        .generatedSourceFile(qualifiedName)
-                        .containsExactLines(expectation);
+                return generatesSources(qualifiedName, expectation);
             } catch (IOException e) {
                 throw new IllegalStateException(
                         "Couldn't read from JavaFileObject when it was already in memory.", e);
             }
+        }
+
+        @Override
+        public T generatesSources(String qualifiedName, List<String> expectation) {
+            CompilationSubject.assertThat(compilation).succeeded();
+            CompilationSubject.assertThat(compilation)
+                    .generatedSourceFile(qualifiedName)
+                    .containsExactLines(expectation);
             return thisObject();
+        }
+
+        @Override
+        public T generatesSources(String qualifiedName, String... expectation) {
+            return generatesSources(qualifiedName, Arrays.asList(expectation));
         }
 
         @Override
