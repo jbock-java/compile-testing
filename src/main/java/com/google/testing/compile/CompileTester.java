@@ -114,6 +114,14 @@ public interface CompileTester {
      * The clause in the fluent API that checks that files were generated.
      */
     public interface GeneratedPredicateClause<T> {
+
+        /**
+         * Checks that the generated file file with a line content equivalent to
+         * the contents of {@code file} was generated for the given
+         * {@code qualifiedName}.
+         */
+        T generatesSources(String qualifiedName, JavaFileObject file);
+
         /**
          * Checks that a file with equivalent kind and content was generated for each of the given
          * {@linkplain JavaFileObject files}.

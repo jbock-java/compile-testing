@@ -38,6 +38,7 @@ import java.util.List;
 
 import static com.google.common.truth.Fact.simpleFact;
 import static com.google.common.truth.Truth.assertAbout;
+import static com.google.testing.compile.CompilationSubject.assertThat;
 import static com.google.testing.compile.CompilationSubject.compilations;
 import static com.google.testing.compile.Compiler.javac;
 import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
@@ -287,6 +288,23 @@ public final class JavaSourcesSubject extends Subject
 
         protected GeneratedCompilationBuilder(Compilation compilation) {
             super(compilation);
+        }
+
+        @Override
+        public T generatesSources(String qualifiedName, JavaFileObject file) {
+            try {
+                List<String> expectation = Arrays.asList(file.getCharContent(false)
+                        .toString()
+                        .split("\\R", -1));
+                CompilationSubject.assertThat(compilation).succeeded();
+                CompilationSubject.assertThat(compilation)
+                        .generatedSourceFile(qualifiedName)
+                        .containsExactLines(expectation);
+            } catch (IOException e) {
+                throw new IllegalStateException(
+                        "Couldn't read from JavaFileObject when it was already in memory.", e);
+            }
+            return thisObject();
         }
 
         @Override
