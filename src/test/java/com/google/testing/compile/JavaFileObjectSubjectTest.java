@@ -17,12 +17,15 @@
 package com.google.testing.compile;
 
 import com.google.common.truth.ExpectFailure;
+import com.google.common.truth.Truth;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import javax.tools.JavaFileObject;
+
+import java.util.Collections;
 
 import static com.google.common.truth.ExpectFailure.assertThat;
 import static com.google.common.truth.Truth.assertThat;
@@ -141,4 +144,109 @@ public final class JavaFileObjectSubjectTest {
                     "    }",
                     "  }",
                     "}");
+
+    @Test
+    public void containsExactLines_completeMatch() {
+        assertThat(SAMPLE_ACTUAL_FILE_FOR_MATCHING).containsExactLines(SAMPLE_ACTUAL_FILE_FOR_MATCHING);
+    }
+
+    @Test
+    public void containsExactLines_failOnEmpty() {
+        expectFailure
+                .whenTesting()
+                .about(javaFileObjects())
+                .that(CLASS)
+                .containsExactLines(Collections.emptyList());
+        AssertionError expected = expectFailure.getFailure();
+        assertThat(expected).factKeys().contains("diff");
+        assertThat(expected.getMessage()).contains("Unmatched token at index 0 in actual:");
+        assertThat(expected.getMessage()).contains(">>> \"package test;\", <<<");
+    }
+
+    @Test
+    public void containsExactLines_failOnDifferences() {
+        expectFailure
+                .whenTesting()
+                .about(javaFileObjects())
+                .that(CLASS)
+                .containsExactLines(DIFFERENT_NAME);
+        AssertionError expected = expectFailure.getFailure();
+        assertThat(expected).factKeys().contains("diff");
+        assertThat(expected.getMessage()).contains("Unmatched token at index 2 in expectation:");
+        assertThat(expected.getMessage()).contains(">>> \"public class TestClass2 {}\" <<<");
+    }
+
+    @Test
+    public void containsLinesIn_completeMatch() {
+        assertThat(SAMPLE_ACTUAL_FILE_FOR_MATCHING).containsLinesIn(SAMPLE_ACTUAL_FILE_FOR_MATCHING);
+    }
+
+    @Test
+    public void containsLinesIn_failOnEmpty() {
+        assertThat(SAMPLE_ACTUAL_FILE_FOR_MATCHING).containsLinesIn(Collections.emptyList());
+    }
+
+    @Test
+    public void containsLinesIn_fail_longSubsequence() {
+        expectFailure
+                .whenTesting()
+                .about(javaFileObjects())
+                .that(UNKNOWN_TYPES)
+                .containsLinesIn(
+                        "package test;",
+                        "",
+                        "// extra line",
+                        "public class TestClass {",
+                        "  Bar badMethod(Baz baz) { return baz.what(); }",
+                        "}");
+        AssertionError expected = expectFailure.getFailure();
+        ExpectFailure.assertThat(expected).factKeys().contains("diff");
+        Truth.assertThat(expected.getMessage()).contains("Failed to find token at subsequence index 2 in actual:");
+        Truth.assertThat(expected.getMessage()).contains(">>> \"// extra line\", <<<");
+    }
+
+    @Test
+    public void containsLinesIn_fail_longSubsequenceTrailing() {
+        expectFailure
+                .whenTesting()
+                .about(javaFileObjects())
+                .that(UNKNOWN_TYPES)
+                .containsLinesIn(
+                        "package test;",
+                        "",
+                        "public class TestClass {",
+                        "  Bar badMethod(Baz baz) { return baz.what(); }",
+                        "}",
+                        "// extra line");
+        AssertionError expected = expectFailure.getFailure();
+        ExpectFailure.assertThat(expected).factKeys().contains("diff");
+        Truth.assertThat(expected.getMessage()).contains("Failed to find token at subsequence index 5 in actual:");
+        Truth.assertThat(expected.getMessage()).contains(">>> \"// extra line\" <<<");
+    }
+
+    @Test
+    public void containsLinesIn_match() {
+        assertThat(SAMPLE_ACTUAL_FILE_FOR_MATCHING).containsLinesIn(
+                "public class SomeFile {",
+                "  private static final int CONSTANT_TIMES_3 = CONSTANT * 3;",
+                "  private static final int CONSTANT_TIMES_4 = CONSTANT * 4;",
+                "}");
+    }
+
+    @Test
+    public void containsLinesIn_failNoMatch() {
+        expectFailure
+                .whenTesting()
+                .about(javaFileObjects())
+                .that(SAMPLE_ACTUAL_FILE_FOR_MATCHING)
+                .containsLinesIn(
+                        "public class SomeFile {",
+                        "  private static final int CONSTANT_TIMES_3 = CONSTANT * 3;",
+                        "  private static final int CONSTANT_TIMES_4 = CONSTANT * 4;",
+                        "  private static final int CONSTANT_TIMES_3 = CONSTANT * 3;",
+                        "}");
+        AssertionError expected = expectFailure.getFailure();
+        Truth.assertThat(expected.getMessage()).contains("Failed to find token at subsequence index 3 in actual:");
+        assertThat(expected.getMessage()).contains(">>> \"  private static final int CONSTANT_TIMES_3 = CONSTANT * 3;\", <<<");
+    }
 }
