@@ -29,6 +29,7 @@ import java.util.Collections;
 
 import static com.google.common.truth.ExpectFailure.assertThat;
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static com.google.testing.compile.JavaFileObjectSubject.assertThat;
 import static com.google.testing.compile.JavaFileObjectSubject.javaFileObjects;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -146,34 +147,35 @@ public final class JavaFileObjectSubjectTest {
                     "}");
 
     @Test
-    public void hasExactContent_completeMatch() {
-        assertThat(SAMPLE_ACTUAL_FILE_FOR_MATCHING).hasExactContent(SAMPLE_ACTUAL_FILE_FOR_MATCHING);
+    public void hasExactContents_completeMatch() {
+        assertThat(SAMPLE_ACTUAL_FILE_FOR_MATCHING).hasExactContents(SAMPLE_ACTUAL_FILE_FOR_MATCHING);
     }
 
     @Test
-    public void hasExactContent_failOnEmpty() {
+    public void hasExactContents_failOnEmpty() {
         expectFailure
                 .whenTesting()
                 .about(javaFileObjects())
                 .that(CLASS)
-                .hasExactContent(Collections.emptyList());
+                .hasExactContents(Collections.emptyList());
         AssertionError expected = expectFailure.getFailure();
         assertThat(expected).factKeys().contains("diff");
         assertThat(expected.getMessage()).contains("Unmatched token at index 0 in actual:");
-        assertThat(expected.getMessage()).contains(">>> \"package test;\", <<<");
+        assertThat(expected.getMessage()).contains("\"package test;\", // actual");
     }
 
     @Test
-    public void hasExactContent_failOnDifferences() {
+    public void hasExactContents_failOnDifferences() {
         expectFailure
                 .whenTesting()
                 .about(javaFileObjects())
                 .that(CLASS)
-                .hasExactContent(DIFFERENT_NAME);
+                .hasExactContents(DIFFERENT_NAME);
         AssertionError expected = expectFailure.getFailure();
         assertThat(expected).factKeys().contains("diff");
         assertThat(expected.getMessage()).contains("Unmatched token at index 2 in expectation:");
-        assertThat(expected.getMessage()).contains(">>> \"public class TestClass2 {}\" <<<");
+        assertThat(expected.getMessage()).contains("\"public class TestClass {}\" // actual");
+        assertThat(expected.getMessage()).contains(">>> \"public class TestClass2 {}\" // expectation");
     }
 
     @Test
@@ -201,8 +203,9 @@ public final class JavaFileObjectSubjectTest {
                         "}");
         AssertionError expected = expectFailure.getFailure();
         ExpectFailure.assertThat(expected).factKeys().contains("diff");
-        Truth.assertThat(expected.getMessage()).contains("Failed to find token at subsequence index 2 in actual:");
-        Truth.assertThat(expected.getMessage()).contains(">>> \"// extra line\", <<<");
+        assertThat(expected.getMessage()).contains("Failed to find token at subsequence index 2 in actual:");
+        assertThat(expected.getMessage()).contains(">>> \"// extra line\", <<<");
+        assertThat(expected.getMessage()).contains("\"\", // last match");
     }
 
     @Test
@@ -220,8 +223,8 @@ public final class JavaFileObjectSubjectTest {
                         "// extra line");
         AssertionError expected = expectFailure.getFailure();
         ExpectFailure.assertThat(expected).factKeys().contains("diff");
-        Truth.assertThat(expected.getMessage()).contains("Failed to find token at subsequence index 5 in actual:");
-        Truth.assertThat(expected.getMessage()).contains(">>> \"// extra line\" <<<");
+        assertThat(expected.getMessage()).contains("Failed to find token at subsequence index 5 in actual:");
+        assertThat(expected.getMessage()).contains(">>> \"// extra line\" <<<");
     }
 
     @Test
@@ -246,7 +249,8 @@ public final class JavaFileObjectSubjectTest {
                         "  private static final int CONSTANT_TIMES_3 = CONSTANT * 3;",
                         "}");
         AssertionError expected = expectFailure.getFailure();
-        Truth.assertThat(expected.getMessage()).contains("Failed to find token at subsequence index 3 in actual:");
+        assertThat(expected.getMessage()).contains("Failed to find token at subsequence index 3 in actual:");
         assertThat(expected.getMessage()).contains(">>> \"  private static final int CONSTANT_TIMES_3 = CONSTANT * 3;\", <<<");
+        assertThat(expected.getMessage()).contains("\"  private static final int CONSTANT_TIMES_4 = CONSTANT * 4;\", // last match");
     }
 }

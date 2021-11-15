@@ -312,7 +312,7 @@ public final class JavaSourcesSubject extends Subject
             CompilationSubject.assertThat(compilation).succeeded();
             CompilationSubject.assertThat(compilation)
                     .generatedSourceFile(qualifiedName)
-                    .hasExactContent(expectation);
+                    .hasExactContents(expectation);
             return thisObject();
         }
 

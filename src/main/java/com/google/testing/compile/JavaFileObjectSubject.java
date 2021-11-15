@@ -120,7 +120,7 @@ public final class JavaFileObjectSubject extends Subject {
      *
      * Always throws {@link UnsupportedOperationException}.
      *
-     * @deprecated use {@link #hasExactContent(List)} instead
+     * @deprecated use {@link #hasExactContents(List)} instead
      */
     @Deprecated(forRemoval = true)
     public void hasSourceEquivalentTo(JavaFileObject expectedSource) {
@@ -143,12 +143,12 @@ public final class JavaFileObjectSubject extends Subject {
      * Asserts that the actual file contains exactly the same lines of code
      * as {@code expectedSource}.
      */
-    public void hasExactContent(JavaFileObject expectedSource) {
+    public void hasExactContents(JavaFileObject expectedSource) {
         try {
             String[] expected = expectedSource.getCharContent(false)
                     .toString()
                     .split("\\R", -1);
-            hasExactContent(expected);
+            hasExactContents(expected);
         } catch (IOException e) {
             throw new IllegalStateException(
                     "Couldn't read from JavaFileObject when it was already in memory.", e);
@@ -159,15 +159,15 @@ public final class JavaFileObjectSubject extends Subject {
      * Asserts that the actual file contains exactly the {@code expectedSource},
      * by comparing line by line.
      */
-    public void hasExactContent(String... expected) {
-        hasExactContent(Arrays.asList(expected));
+    public void hasExactContents(String... expected) {
+        hasExactContents(Arrays.asList(expected));
     }
 
     /**
      * Asserts that the actual file contains exactly the {@code expectedSource},
      * by comparing line by line.
      */
-    public void hasExactContent(List<String> expected) {
+    public void hasExactContents(List<String> expected) {
         try {
             List<String> actualList = Arrays.asList(actual.getCharContent(false)
                     .toString()
@@ -358,12 +358,12 @@ public final class JavaFileObjectSubject extends Subject {
                 index));
         message.add("    " + toStringLiteral(unmatchedToken));
         message.add("Expecting actual:");
-        int mainIndex = actualIndex; // so we can use it in the lambda
+        int matchIndex = (actualIndex - 1); // so we can use it in the lambda
         IntStream.range(0, actualSize)
                 .mapToObj(i -> {
-                    boolean isOffendingToken = i == mainIndex;
+                    boolean isLastMatch = i == matchIndex;
                     String suffix = i == actualSize - 1 ? "" : ",";
-                    if (isOffendingToken) {
+                    if (isLastMatch) {
                         suffix += " // last match";
                     }
                     return toStringLiteral(actual.get(i)) + suffix;
