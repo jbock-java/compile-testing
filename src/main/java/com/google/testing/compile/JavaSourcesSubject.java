@@ -295,12 +295,12 @@ public final class JavaSourcesSubject extends Subject
         }
 
         @Override
-        public T generatesSources(String qualifiedName, JavaFileObject file) {
+        public T hasExactContents(String qualifiedName, JavaFileObject file) {
             try {
                 List<String> expectation = Arrays.asList(file.getCharContent(false)
                         .toString()
                         .split("\\R", -1));
-                return generatesSources(qualifiedName, expectation);
+                return hasExactContents(qualifiedName, expectation);
             } catch (IOException e) {
                 throw new IllegalStateException(
                         "Couldn't read from JavaFileObject when it was already in memory.", e);
@@ -308,7 +308,7 @@ public final class JavaSourcesSubject extends Subject
         }
 
         @Override
-        public T generatesSources(String qualifiedName, List<String> expectation) {
+        public T hasExactContents(String qualifiedName, List<String> expectation) {
             CompilationSubject.assertThat(compilation).succeeded();
             CompilationSubject.assertThat(compilation)
                     .generatedSourceFile(qualifiedName)
@@ -317,8 +317,22 @@ public final class JavaSourcesSubject extends Subject
         }
 
         @Override
-        public T generatesSources(String qualifiedName, String... expectation) {
-            return generatesSources(qualifiedName, Arrays.asList(expectation));
+        public T hasExactContents(String qualifiedName, String... expectation) {
+            return hasExactContents(qualifiedName, Arrays.asList(expectation));
+        }
+
+        @Override
+        public T containsLines(String qualifiedName, String... expectedPattern) {
+            return containsLines(qualifiedName, Arrays.asList(expectedPattern));
+        }
+
+        @Override
+        public T containsLines(String qualifiedName, List<String> expectedPattern) {
+            CompilationSubject.assertThat(compilation).succeeded();
+            CompilationSubject.assertThat(compilation)
+                    .generatedSourceFile(qualifiedName)
+                    .containsLines(expectedPattern);
+            return thisObject();
         }
 
         @Override

@@ -118,9 +118,10 @@ public final class JavaFileObjectSubject extends Subject {
     /**
      * <p><b>DO NOT USE</b>
      *
-     * Always throws {@link UnsupportedOperationException}.
+     * <p>Always throws {@link UnsupportedOperationException}.
      *
-     * @deprecated use {@link #hasExactContents(List)} instead
+     * @deprecated use {@link #hasExactContents(List)} or
+     * {@link #hasExactContents(String...)} instead
      */
     @Deprecated(forRemoval = true)
     public void hasSourceEquivalentTo(JavaFileObject expectedSource) {
@@ -130,9 +131,10 @@ public final class JavaFileObjectSubject extends Subject {
     /**
      * <p><b>DO NOT USE</b>
      *
-     * Always throws {@link UnsupportedOperationException}.
+     * <p>Always throws {@link UnsupportedOperationException}.
      *
-     * @deprecated use {@link #containsLines(List)} instead
+     * @deprecated use {@link #containsLines(List)} or
+     * {@link #containsLines(String...)} instead
      */
     @Deprecated(forRemoval = true)
     public void containsElementsIn(JavaFileObject expectedPattern) {

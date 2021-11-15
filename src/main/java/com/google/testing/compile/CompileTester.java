@@ -119,32 +119,47 @@ public interface CompileTester {
         /**
          * <p><b>DO NOT USE</b>
          *
-         * @deprecated use {@link #generatesSources(String, JavaFileObject)} instead
+         * <p>Implementations are likely to throw {@link UnsupportedOperationException}.
+         *
+         * @deprecated use {@code hasExactContents} or {@code containsLines} instead
          */
-        @Deprecated
+        @Deprecated(forRemoval = true)
         T generatesSources(JavaFileObject first, JavaFileObject... rest);
 
         /**
-         * Checks that the generated file with a line content equivalent to
-         * the contents of {@code file} was generated for the given
-         * {@code qualifiedName}.
+         * Checks that the generated file with the qualified name {@code qualifiedName}
+         * exists and has exactly the same contents as {@code expectation}.
+         *
+         * @deprecated there is no need to create
+         * a {@link JavaFileObject}, use {@link #hasExactContents(String, String...)} or
+         * {@link #hasExactContents(String, List)} instead
          */
-        T generatesSources(String qualifiedName, JavaFileObject file);
+        @Deprecated
+        T hasExactContents(String qualifiedName, JavaFileObject expectation);
 
         /**
-         * Checks that the generated file with a line content equivalent to
-         * {@code expectation} was generated for the given
-         * {@code qualifiedName}.
+         * Checks that the generated file with the qualified name {@code qualifiedName}
+         * exists and contains exactly the lines in {@code expectation}.
          */
-        T generatesSources(String qualifiedName, List<String> expectation);
+        T hasExactContents(String qualifiedName, List<String> expectation);
 
         /**
-         * Checks that the generated file with a line content equivalent to
-         * {@code expectation} was generated for the given
-         * {@code qualifiedName}.
+         * Checks that the generated file with the qualified name {@code qualifiedName}
+         * exists and contains exactly the lines in {@code expectation}.
          */
-        T generatesSources(String qualifiedName, String... expectation);
+        T hasExactContents(String qualifiedName, String... expectation);
 
+        /**
+         * Checks that the generated file with the qualified name {@code qualifiedName}
+         * exists and contains the {@code expectedPattern} as a subsequence.
+         */
+        T containsLines(String qualifiedName, List<String> expectedPattern);
+
+        /**
+         * Checks that the generated file with the qualified name {@code qualifiedName}
+         * exists and contains the {@code expectedPattern} as a subsequence.
+         */
+        T containsLines(String qualifiedName, String... expectedPattern);
 
         /**
          * Checks that a file with equivalent kind and content was generated for each of the given
