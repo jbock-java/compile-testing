@@ -130,8 +130,8 @@ public interface CompileTester {
          * Checks that the generated file with the qualified name {@code qualifiedName}
          * exists and has exactly the same contents as {@code expectation}.
          *
-         * @deprecated there is no need to create
-         * a {@link JavaFileObject}, use {@link #hasExactContents(String, String...)} or
+         * @deprecated it should not be necessary to create
+         * a {@code JavaFileObject}, use {@link #hasExactContents(String, String...)} or
          * {@link #hasExactContents(String, List)} instead
          */
         @Deprecated

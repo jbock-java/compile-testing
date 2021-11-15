@@ -144,7 +144,12 @@ public final class JavaFileObjectSubject extends Subject {
     /**
      * Asserts that the actual file contains exactly the same lines of code
      * as {@code expectedSource}.
+     *
+     * @deprecated it should not be necessary to create
+     * a {@code JavaFileObject}, use {@link #hasExactContents(String...)} or
+     * {@link #hasExactContents(List)} instead
      */
+    @Deprecated
     public void hasExactContents(JavaFileObject expectedSource) {
         try {
             String[] expected = expectedSource.getCharContent(false)
