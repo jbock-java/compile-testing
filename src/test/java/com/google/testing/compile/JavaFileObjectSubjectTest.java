@@ -146,17 +146,17 @@ public final class JavaFileObjectSubjectTest {
                     "}");
 
     @Test
-    public void containsExactLines_completeMatch() {
-        assertThat(SAMPLE_ACTUAL_FILE_FOR_MATCHING).containsExactLines(SAMPLE_ACTUAL_FILE_FOR_MATCHING);
+    public void hasExactContent_completeMatch() {
+        assertThat(SAMPLE_ACTUAL_FILE_FOR_MATCHING).hasExactContent(SAMPLE_ACTUAL_FILE_FOR_MATCHING);
     }
 
     @Test
-    public void containsExactLines_failOnEmpty() {
+    public void hasExactContent_failOnEmpty() {
         expectFailure
                 .whenTesting()
                 .about(javaFileObjects())
                 .that(CLASS)
-                .containsExactLines(Collections.emptyList());
+                .hasExactContent(Collections.emptyList());
         AssertionError expected = expectFailure.getFailure();
         assertThat(expected).factKeys().contains("diff");
         assertThat(expected.getMessage()).contains("Unmatched token at index 0 in actual:");
@@ -164,12 +164,12 @@ public final class JavaFileObjectSubjectTest {
     }
 
     @Test
-    public void containsExactLines_failOnDifferences() {
+    public void hasExactContent_failOnDifferences() {
         expectFailure
                 .whenTesting()
                 .about(javaFileObjects())
                 .that(CLASS)
-                .containsExactLines(DIFFERENT_NAME);
+                .hasExactContent(DIFFERENT_NAME);
         AssertionError expected = expectFailure.getFailure();
         assertThat(expected).factKeys().contains("diff");
         assertThat(expected.getMessage()).contains("Unmatched token at index 2 in expectation:");
@@ -177,22 +177,22 @@ public final class JavaFileObjectSubjectTest {
     }
 
     @Test
-    public void containsLinesIn_completeMatch() {
-        assertThat(SAMPLE_ACTUAL_FILE_FOR_MATCHING).containsLinesIn(SAMPLE_ACTUAL_FILE_FOR_MATCHING);
+    public void containsLines_completeMatch() {
+        assertThat(SAMPLE_ACTUAL_FILE_FOR_MATCHING).containsLines(SAMPLE_ACTUAL_FILE_FOR_MATCHING);
     }
 
     @Test
-    public void containsLinesIn_failOnEmpty() {
-        assertThat(SAMPLE_ACTUAL_FILE_FOR_MATCHING).containsLinesIn(Collections.emptyList());
+    public void containsLines_failOnEmpty() {
+        assertThat(SAMPLE_ACTUAL_FILE_FOR_MATCHING).containsLines(Collections.emptyList());
     }
 
     @Test
-    public void containsLinesIn_fail_longSubsequence() {
+    public void containsLines_fail_longSubsequence() {
         expectFailure
                 .whenTesting()
                 .about(javaFileObjects())
                 .that(UNKNOWN_TYPES)
-                .containsLinesIn(
+                .containsLines(
                         "package test;",
                         "",
                         "// extra line",
@@ -206,12 +206,12 @@ public final class JavaFileObjectSubjectTest {
     }
 
     @Test
-    public void containsLinesIn_fail_longSubsequenceTrailing() {
+    public void containsLines_fail_longSubsequenceTrailing() {
         expectFailure
                 .whenTesting()
                 .about(javaFileObjects())
                 .that(UNKNOWN_TYPES)
-                .containsLinesIn(
+                .containsLines(
                         "package test;",
                         "",
                         "public class TestClass {",
@@ -226,7 +226,7 @@ public final class JavaFileObjectSubjectTest {
 
     @Test
     public void containsLinesIn_match() {
-        assertThat(SAMPLE_ACTUAL_FILE_FOR_MATCHING).containsLinesIn(
+        assertThat(SAMPLE_ACTUAL_FILE_FOR_MATCHING).containsLines(
                 "public class SomeFile {",
                 "  private static final int CONSTANT_TIMES_3 = CONSTANT * 3;",
                 "  private static final int CONSTANT_TIMES_4 = CONSTANT * 4;",
@@ -239,7 +239,7 @@ public final class JavaFileObjectSubjectTest {
                 .whenTesting()
                 .about(javaFileObjects())
                 .that(SAMPLE_ACTUAL_FILE_FOR_MATCHING)
-                .containsLinesIn(
+                .containsLines(
                         "public class SomeFile {",
                         "  private static final int CONSTANT_TIMES_3 = CONSTANT * 3;",
                         "  private static final int CONSTANT_TIMES_4 = CONSTANT * 4;",
