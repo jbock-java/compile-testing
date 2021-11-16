@@ -162,12 +162,7 @@ public final class JavaFileObjectSubject extends Subject {
     /**
      * Asserts that the lines of the actual file contain the lines of
      * {@code expectedPattern} as a subsequence.
-     *
-     * @deprecated it should not be necessary to create
-     * a {@code JavaFileObject}, use {@link #containsLines(String...)} or
-     * {@link #containsLines(List)} instead
      */
-    @Deprecated
     public void containsLines(JavaFileObject expectedPattern) {
         try {
             List<String> expected = Arrays.asList(expectedPattern.getCharContent(false)
