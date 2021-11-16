@@ -15,6 +15,12 @@
  */
 package com.google.testing.compile;
 
+import static com.google.common.truth.Fact.simpleFact;
+import static com.google.common.truth.Truth.assertAbout;
+import static com.google.testing.compile.CompilationSubject.compilations;
+import static com.google.testing.compile.Compiler.javac;
+import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -25,22 +31,15 @@ import com.google.common.truth.Subject;
 import com.google.testing.compile.CompilationSubject.DiagnosticAtColumn;
 import com.google.testing.compile.CompilationSubject.DiagnosticInFile;
 import com.google.testing.compile.CompilationSubject.DiagnosticOnLine;
-
-import javax.annotation.processing.Processor;
-import javax.tools.JavaFileManager;
-import javax.tools.JavaFileObject;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static com.google.common.truth.Fact.simpleFact;
-import static com.google.common.truth.Truth.assertAbout;
-import static com.google.testing.compile.CompilationSubject.compilations;
-import static com.google.testing.compile.Compiler.javac;
-import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
+import javax.annotation.processing.Processor;
+import javax.tools.JavaFileManager;
+import javax.tools.JavaFileObject;
 
 /**
  * A <a href="https://github.com/truth0/truth">Truth</a> {@link Subject} that evaluates the result
@@ -292,33 +291,6 @@ public final class JavaSourcesSubject extends Subject
         @Override
         public final T generatesSources(JavaFileObject first, JavaFileObject... rest) {
             throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public T hasExactContents(String qualifiedName, JavaFileObject file) {
-            try {
-                List<String> expectation = Arrays.asList(file.getCharContent(false)
-                        .toString()
-                        .split("\\R", -1));
-                return hasExactContents(qualifiedName, expectation);
-            } catch (IOException e) {
-                throw new IllegalStateException(
-                        "Couldn't read from JavaFileObject when it was already in memory.", e);
-            }
-        }
-
-        @Override
-        public T hasExactContents(String qualifiedName, List<String> expectation) {
-            CompilationSubject.assertThat(compilation).succeeded();
-            CompilationSubject.assertThat(compilation)
-                    .generatedSourceFile(qualifiedName)
-                    .hasExactContents(expectation);
-            return thisObject();
-        }
-
-        @Override
-        public T hasExactContents(String qualifiedName, String... expectation) {
-            return hasExactContents(qualifiedName, Arrays.asList(expectation));
         }
 
         @Override

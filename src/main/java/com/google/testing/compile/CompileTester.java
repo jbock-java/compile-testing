@@ -128,29 +128,6 @@ public interface CompileTester {
 
         /**
          * Checks that the generated file with the qualified name {@code qualifiedName}
-         * exists and has exactly the same contents as {@code expectation}.
-         *
-         * @deprecated it should not be necessary to create
-         * a {@code JavaFileObject}, use {@link #hasExactContents(String, String...)} or
-         * {@link #hasExactContents(String, List)} instead
-         */
-        @Deprecated
-        T hasExactContents(String qualifiedName, JavaFileObject expectation);
-
-        /**
-         * Checks that the generated file with the qualified name {@code qualifiedName}
-         * exists and contains exactly the lines in {@code expectation}.
-         */
-        T hasExactContents(String qualifiedName, List<String> expectation);
-
-        /**
-         * Checks that the generated file with the qualified name {@code qualifiedName}
-         * exists and contains exactly the lines in {@code expectation}.
-         */
-        T hasExactContents(String qualifiedName, String... expectation);
-
-        /**
-         * Checks that the generated file with the qualified name {@code qualifiedName}
          * exists and contains the {@code expectedPattern} as a subsequence.
          */
         T containsLines(String qualifiedName, List<String> expectedPattern);

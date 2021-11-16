@@ -15,24 +15,21 @@
  */
 package com.google.testing.compile;
 
-import com.google.common.io.ByteSource;
-import com.google.common.truth.FailureMetadata;
-import com.google.common.truth.StringSubject;
-import com.google.common.truth.Subject;
-
-import javax.tools.JavaFileObject;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.IntStream;
-
 import static com.google.common.truth.Fact.fact;
 import static com.google.common.truth.Truth.assertAbout;
 import static com.google.testing.compile.JavaFileObjects.asByteSource;
 import static java.nio.charset.StandardCharsets.UTF_8;
+
+import com.google.common.io.ByteSource;
+import com.google.common.truth.FailureMetadata;
+import com.google.common.truth.IterableSubject;
+import com.google.common.truth.StringSubject;
+import com.google.common.truth.Subject;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.List;
+import javax.tools.JavaFileObject;
 
 /** Assertions about {@link JavaFileObject}s. */
 public final class JavaFileObjectSubject extends Subject {
@@ -109,6 +106,19 @@ public final class JavaFileObjectSubject extends Subject {
 
     /**
      * Returns a {@link StringSubject} that makes assertions about the contents of the actual file as
+     * a list of lines.
+     */
+    public IterableSubject contentsAsIterable(Charset charset) {
+        try {
+            return check("contents()")
+                    .that(Arrays.asList(JavaFileObjects.asByteSource(actual).asCharSource(charset).read().split("\\R")));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Returns a {@link StringSubject} that makes assertions about the contents of the actual file as
      * a UTF-8 string.
      */
     public StringSubject contentsAsUtf8String() {
@@ -116,12 +126,20 @@ public final class JavaFileObjectSubject extends Subject {
     }
 
     /**
+     * Returns a {@link StringSubject} that makes assertions about the contents of the actual file as
+     * a list of lines.
+     */
+    public IterableSubject contentsAsUtf8Iterable() {
+        return contentsAsIterable(UTF_8);
+    }
+
+    /**
      * <p><b>DO NOT USE</b>
      *
      * <p>Always throws {@link UnsupportedOperationException}.
      *
-     * @deprecated use {@link #hasExactContents(List)} or
-     * {@link #hasExactContents(String...)} instead
+     * @deprecated use {@link #containsLines(List)} or
+     * {@link #containsLines(String...)} instead
      */
     @Deprecated(forRemoval = true)
     public void hasSourceEquivalentTo(JavaFileObject expectedSource) {
@@ -142,60 +160,14 @@ public final class JavaFileObjectSubject extends Subject {
     }
 
     /**
-     * Asserts that the actual file contains exactly the same lines of code
-     * as {@code expectedSource}.
-     *
-     * @deprecated it should not be necessary to create
-     * a {@code JavaFileObject}, use {@link #hasExactContents(String...)} or
-     * {@link #hasExactContents(List)} instead
-     */
-    @Deprecated
-    public void hasExactContents(JavaFileObject expectedSource) {
-        try {
-            String[] expected = expectedSource.getCharContent(false)
-                    .toString()
-                    .split("\\R", -1);
-            hasExactContents(expected);
-        } catch (IOException e) {
-            throw new IllegalStateException(
-                    "Couldn't read from JavaFileObject when it was already in memory.", e);
-        }
-    }
-
-    /**
-     * Asserts that the actual file contains exactly the {@code expectedSource},
-     * by comparing line by line.
-     */
-    public void hasExactContents(String... expected) {
-        hasExactContents(Arrays.asList(expected));
-    }
-
-    /**
-     * Asserts that the actual file contains exactly the {@code expectedSource},
-     * by comparing line by line.
-     */
-    public void hasExactContents(List<String> expected) {
-        try {
-            List<String> actualList = Arrays.asList(actual.getCharContent(false)
-                    .toString()
-                    .split("\\R", -1));
-            String diffReport = exactContentsReport(expected, actualList);
-            if (diffReport == null) {
-                return;
-            }
-            failWithoutActual(
-                    fact("for file", actual.toUri().getPath()),
-                    fact("diff", diffReport));
-        } catch (IOException e) {
-            throw new IllegalStateException(
-                    "Couldn't read from JavaFileObject when it was already in memory.", e);
-        }
-    }
-
-    /**
      * Asserts that the lines of the actual file contain the lines of
      * {@code expectedPattern} as a subsequence.
+     *
+     * @deprecated it should not be necessary to create
+     * a {@code JavaFileObject}, use {@link #containsLines(String...)} or
+     * {@link #containsLines(List)} instead
      */
+    @Deprecated
     public void containsLines(JavaFileObject expectedPattern) {
         try {
             List<String> expected = Arrays.asList(expectedPattern.getCharContent(false)
@@ -225,174 +197,15 @@ public final class JavaFileObjectSubject extends Subject {
             List<String> actualList = Arrays.asList(this.actual.getCharContent(false)
                     .toString()
                     .split("\\R", -1));
-            String diffReport = containsLinesInReport(expectedPattern, actualList);
-            if (diffReport == null) {
-                return;
-            }
-            failWithoutActual(
-                    fact("for file", this.actual.toUri().getPath()),
-                    fact("diff", diffReport));
+            SubsequenceChecker.checkSubsequence(actualList, expectedPattern)
+                    .ifPresent(subsequenceReport -> failWithoutActual(
+                            fact("for file", this.actual.toUri().getPath()),
+                            fact("unmatched", subsequenceReport.getUnmatched()),
+                            fact("actual", subsequenceReport.getActual()),
+                            fact("subsequence", subsequenceReport.getSubsequence())));
         } catch (IOException e) {
             throw new IllegalStateException(
                     "Couldn't read from JavaFileObject when it was already in memory.", e);
         }
-    }
-
-    private String exactContentsReport(List<String> expected, List<String> actual) {
-        boolean failure = false;
-        int expectedIndex = 0;
-        final int expectedSize = expected.size();
-        final int actualSize = actual.size();
-        if (expectedSize < actualSize) {
-            return exactContentsReportShortExpectation(expected, actual);
-        }
-        for (; expectedIndex < expectedSize; expectedIndex++) {
-            if (expectedIndex >= actualSize ||
-                    !Objects.equals(actual.get(expectedIndex), expected.get(expectedIndex))) {
-                failure = true;
-                break;
-            }
-        }
-        if (!failure) {
-            return null;
-        }
-        String unmatchedToken = expected.get(expectedIndex);
-        List<String> message = new ArrayList<>();
-        message.add(String.format(
-                "Unmatched token at index %d in expectation:",
-                expectedIndex));
-        message.add("    " + toStringLiteral(unmatchedToken));
-        message.add("Expecting actual:");
-        int unmatchedExpected = expectedIndex; // so we can use it in the lambda
-        IntStream.range(0, actualSize)
-                .mapToObj(i -> {
-                    boolean isOffendingToken = i == unmatchedExpected;
-                    String suffix = i == actualSize - 1 ? "" : ",";
-                    if (isOffendingToken) {
-                        suffix += " // actual";
-                    }
-                    return toStringLiteral(actual.get(i)) + suffix;
-                })
-                .forEach(message::add);
-        message.add("to match exactly:");
-        IntStream.range(0, expectedSize)
-                .mapToObj(i -> {
-                    boolean isOffendingToken = i == unmatchedExpected;
-                    String prefix = isOffendingToken ? ">>> " : "    ";
-                    String suffix = i == expectedSize - 1 ? "" : ",";
-                    if (isOffendingToken) {
-                        suffix += " // expectation";
-                    }
-                    return prefix + toStringLiteral(expected.get(i)) + suffix;
-                })
-                .forEach(message::add);
-        return String.join("\n", message);
-    }
-
-    private String exactContentsReportShortExpectation(List<String> expected, List<String> actual) {
-        boolean failure = false;
-        int actualIndex = 0;
-        final int expectedSize = expected.size();
-        final int actualSize = actual.size();
-        for (; actualIndex < actualSize; actualIndex++) {
-            if (actualIndex >= expectedSize ||
-                    !Objects.equals(actual.get(actualIndex), expected.get(actualIndex))) {
-                failure = true;
-                break;
-            }
-        }
-        if (!failure) {
-            return null;
-        }
-        String unmatchedActual = actual.get(actualIndex);
-        List<String> message = new ArrayList<>();
-        message.add(String.format(
-                "Unmatched token at index %d in actual:",
-                actualIndex));
-        message.add("    " + toStringLiteral(unmatchedActual));
-        message.add("Expecting actual:");
-        int unmatchedIndex = actualIndex; // so we can use it in the lambda
-        IntStream.range(0, actualSize)
-                .mapToObj(i -> {
-                    boolean isOffendingToken = i == unmatchedIndex;
-                    String suffix = i == actualSize - 1 ? "" : ",";
-                    if (isOffendingToken) {
-                        suffix += " // actual";
-                    }
-                    return toStringLiteral(actual.get(i)) + suffix;
-                })
-                .forEach(message::add);
-        message.add("to match exactly:");
-        IntStream.range(0, expectedSize)
-                .mapToObj(i -> {
-                    boolean isOffendingToken = i == unmatchedIndex;
-                    String prefix = isOffendingToken ? ">>> " : "    ";
-                    String suffix = i == expectedSize - 1 ? "" : ",";
-                    if (isOffendingToken) {
-                        suffix += " // expectation";
-                    }
-                    return prefix + toStringLiteral(expected.get(i)) + suffix;
-                })
-                .forEach(message::add);
-        return String.join("\n", message);
-    }
-
-    private String containsLinesInReport(List<String> subsequence, List<String> actual) {
-        int index = 0;
-        int actualIndex = 0;
-        boolean failure = false;
-        int subsequenceSize = subsequence.size();
-        int actualSize = actual.size();
-        outer:
-        for (; index < subsequenceSize; index++) {
-            String subsequenceToken = subsequence.get(index);
-            for (int i = actualIndex; i < actualSize; i++) {
-                if (Objects.equals(subsequenceToken, actual.get(i))) {
-                    actualIndex = i + 1;
-                    continue outer;
-                }
-            }
-            failure = true;
-            break;
-        }
-        if (!failure) {
-            return null;
-        }
-        String unmatchedToken = subsequence.get(index);
-        List<String> message = new ArrayList<>();
-        message.add(String.format(
-                "Failed to find token at subsequence index %d in actual:",
-                index));
-        message.add("    " + toStringLiteral(unmatchedToken));
-        message.add("Expecting actual:");
-        int matchIndex = (actualIndex - 1); // so we can use it in the lambda
-        IntStream.range(0, actualSize)
-                .mapToObj(i -> {
-                    boolean isLastMatch = i == matchIndex;
-                    String suffix = i == actualSize - 1 ? "" : ",";
-                    if (isLastMatch) {
-                        suffix += " // last match";
-                    }
-                    return toStringLiteral(actual.get(i)) + suffix;
-                })
-                .forEach(message::add);
-        message.add("to contain subsequence:");
-        int subsequenceIndex = index; // so we can use it in the lambda
-        IntStream.range(0, subsequenceSize)
-                .mapToObj(i -> {
-                    boolean isOffendingToken = i == subsequenceIndex;
-                    String prefix = isOffendingToken ? ">>> " : "    ";
-                    String suffix = i == subsequenceSize - 1 ? "" : ",";
-                    if (isOffendingToken) {
-                        suffix += " <<<";
-                    }
-                    return prefix + toStringLiteral(subsequence.get(i)) + suffix;
-                })
-                .forEach(message::add);
-        return String.join("\n", message);
-    }
-
-    private String toStringLiteral(String token) {
-        return "\"" + token.replace("\"", "\\\"") + "\"";
     }
 }
