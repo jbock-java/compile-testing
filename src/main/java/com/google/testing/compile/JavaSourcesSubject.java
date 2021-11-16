@@ -294,6 +294,19 @@ public final class JavaSourcesSubject extends Subject
         }
 
         @Override
+        public T containsLines(String qualifiedName, JavaFileObject file) {
+            try {
+                List<String> expectation = Arrays.asList(file.getCharContent(false)
+                        .toString()
+                        .split("\\R", -1));
+                return containsLines(qualifiedName, expectation);
+            } catch (IOException e) {
+                throw new IllegalStateException(
+                        "Couldn't read from JavaFileObject when it was already in memory.", e);
+            }
+        }
+
+        @Override
         public T containsLines(String qualifiedName, String... expectedPattern) {
             return containsLines(qualifiedName, Arrays.asList(expectedPattern));
         }

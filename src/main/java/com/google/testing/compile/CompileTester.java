@@ -16,12 +16,11 @@
 package com.google.testing.compile;
 
 import com.google.common.io.ByteSource;
-
+import java.nio.charset.Charset;
+import java.util.List;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
-import java.nio.charset.Charset;
-import java.util.List;
 
 /**
  * The root of the fluent API for testing the result of compilation.
@@ -125,6 +124,12 @@ public interface CompileTester {
          */
         @Deprecated(forRemoval = true)
         T generatesSources(JavaFileObject first, JavaFileObject... rest);
+
+        /**
+         * Checks that the generated file with the qualified name {@code qualifiedName}
+         * exists and contains {@code expectation} as a subsequence.
+         */
+        T containsLines(String qualifiedName, JavaFileObject expectation);
 
         /**
          * Checks that the generated file with the qualified name {@code qualifiedName}
