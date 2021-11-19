@@ -20,14 +20,11 @@ import org.junit.runner.RunWith;
 
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
-import java.util.stream.Stream;
 
 import static com.google.testing.compile.Compiler.javac;
-import static java.util.stream.Collectors.joining;
 
-/** Tests {@link CompilationSubject}. */
 @RunWith(Enclosed.class)
-public class CompilationSubjectTests {
+class CompilationSubjectTests {
     static final JavaFileObject HELLO_WORLD =
             JavaFileObjects.forSourceLines(
                     "test.HelloWorld",
