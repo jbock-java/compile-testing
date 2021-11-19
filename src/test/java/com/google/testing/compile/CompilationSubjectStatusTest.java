@@ -60,18 +60,18 @@ public class CompilationSubjectStatusTest {
 
     @Test
     public void succeeded_failureReportsWarnings() {
-        expectFailure
-                .whenTesting()
-                .about(compilations())
-                .that(CompilationSubjectTests.compilerWithWarning().compile(CompilationSubjectTests.HELLO_WORLD_BROKEN))
-                .succeeded();
-        AssertionError expected = expectFailure.getFailure();
-        Truth.assertThat(expected.getMessage())
-                .startsWith("Compilation produced the following diagnostics:\n");
-        Truth.assertThat(expected.getMessage()).contains("No files were generated.");
+        Compilation compilation = CompilationSubjectTests.compilerWithWarning()
+                .compile(CompilationSubjectTests.HELLO_WORLD_BROKEN);
+        AssertionError expected = Assertions.assertThrows(AssertionError.class, () ->
+                CompilationSubject.assertThat(compilation).succeeded());
+        Assertions.assertTrue(expected.getMessage()
+                .startsWith("Compilation produced the following diagnostics:\n"));
+        Assertions.assertTrue(expected.getMessage()
+                .contains("No files were generated."));
         // "this is a message" is output by compilerWithWarning() since the source has
         // @DiagnosticMessage
-        Truth.assertThat(expected.getMessage()).contains("warning: this is a message");
+        Assertions.assertTrue(expected.getMessage()
+                .contains("warning: this is a message"));
     }
 
     @Test
