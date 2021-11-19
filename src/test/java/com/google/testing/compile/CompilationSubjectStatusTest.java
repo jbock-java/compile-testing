@@ -4,6 +4,7 @@ import com.google.common.truth.ExpectFailure;
 import com.google.common.truth.Truth;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -25,12 +26,10 @@ public class CompilationSubjectStatusTest {
 
     @Test
     public void succeeded_failureReportsGeneratedFiles() {
-        expectFailure
-                .whenTesting()
-                .about(compilations())
-                .that(CompilationSubjectTests.compilerWithGeneratorAndError().compile(CompilationSubjectTests.HELLO_WORLD_RESOURCE))
-                .succeeded();
-        AssertionError expected = expectFailure.getFailure();
+        Compilation compilation = CompilationSubjectTests.compilerWithGeneratorAndError()
+                .compile(CompilationSubjectTests.HELLO_WORLD_RESOURCE);
+        AssertionError expected = Assertions.assertThrows(AssertionError.class, () ->
+                CompilationSubject.assertThat(compilation).succeeded());
         Truth.assertThat(expected.getMessage()).contains(
                 "Compilation produced the following diagnostics:\n");
         Truth.assertThat(expected.getMessage()).contains(FailingGeneratingProcessor.GENERATED_CLASS_NAME);

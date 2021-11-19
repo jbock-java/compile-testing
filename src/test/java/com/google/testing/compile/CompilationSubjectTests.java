@@ -15,15 +15,11 @@
  */
 package com.google.testing.compile;
 
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
-
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 
 import static com.google.testing.compile.Compiler.javac;
 
-@RunWith(Enclosed.class)
 class CompilationSubjectTests {
     static final JavaFileObject HELLO_WORLD =
             JavaFileObjects.forSourceLines(
