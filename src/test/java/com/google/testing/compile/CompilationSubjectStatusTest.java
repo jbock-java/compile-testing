@@ -11,7 +11,6 @@ import org.junit.runners.JUnit4;
 import static com.google.testing.compile.CompilationSubject.assertThat;
 import static com.google.testing.compile.CompilationSubject.compilations;
 import static com.google.testing.compile.Compiler.javac;
-import static org.junit.Assert.fail;
 
 @RunWith(JUnit4.class)
 public class CompilationSubjectStatusTest {
@@ -30,39 +29,33 @@ public class CompilationSubjectStatusTest {
                 .compile(CompilationSubjectTests.HELLO_WORLD_RESOURCE);
         AssertionError expected = Assertions.assertThrows(AssertionError.class, () ->
                 CompilationSubject.assertThat(compilation).succeeded());
-        Truth.assertThat(expected.getMessage()).contains(
-                "Compilation produced the following diagnostics:\n");
-        Truth.assertThat(expected.getMessage()).contains(FailingGeneratingProcessor.GENERATED_CLASS_NAME);
-        Truth.assertThat(expected.getMessage()).contains(FailingGeneratingProcessor.GENERATED_SOURCE);
+        Assertions.assertTrue(expected.getMessage().contains(
+                "Compilation produced the following diagnostics:\n"));
+        Assertions.assertTrue(expected.getMessage().contains(
+                FailingGeneratingProcessor.GENERATED_CLASS_NAME));
+        Assertions.assertTrue(expected.getMessage().contains(
+                FailingGeneratingProcessor.GENERATED_SOURCE));
     }
 
     @Test
     public void succeeded_failureReportsNoGeneratedFiles() {
-        expectFailure
-                .whenTesting()
-                .about(compilations())
-                .that(javac().compile(CompilationSubjectTests.HELLO_WORLD_BROKEN_RESOURCE))
-                .succeeded();
-        AssertionError expected = expectFailure.getFailure();
-        Truth.assertThat(expected.getMessage()).startsWith(
-                "Compilation produced the following diagnostics:\n");
-        Truth.assertThat(expected.getMessage()).contains("No files were generated.");
+        Compilation compilation = CompilationSubjectTests.compilerWithGeneratorAndError()
+                .compile(CompilationSubjectTests.HELLO_WORLD_BROKEN_RESOURCE);
+        AssertionError expected = Assertions.assertThrows(AssertionError.class, () ->
+                CompilationSubject.assertThat(compilation).succeeded());
+        Assertions.assertTrue(expected.getMessage().startsWith(
+                "Compilation produced the following diagnostics:\n"));
+        Assertions.assertTrue(expected.getMessage().contains(
+                "No files were generated."));
     }
 
     @Test
     public void succeeded_exceptionCreatedOrPassedThrough() {
         RuntimeException e = new RuntimeException();
-        try {
-            Truth.assertAbout(compilations())
-                    .that(CompilationSubjectTests.throwingCompiler(e).compile(CompilationSubjectTests.HELLO_WORLD_RESOURCE))
-                    .succeeded();
-            fail();
-        } catch (CompilationFailureException expected) {
-            // some old javacs don't pass through exceptions, so we create one
-        } catch (RuntimeException expected) {
-            // newer jdks throw a runtime exception whose cause is the original exception
-            Truth.assertThat(expected.getCause()).isEqualTo(e);
-        }
+        RuntimeException expected = Assertions.assertThrows(RuntimeException.class, () -> Truth.assertAbout(compilations())
+                .that(CompilationSubjectTests.throwingCompiler(e).compile(CompilationSubjectTests.HELLO_WORLD_RESOURCE))
+                .succeeded());
+        Assertions.assertSame(e, expected.getCause());
     }
 
     @Test
