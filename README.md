@@ -11,7 +11,7 @@ The new method `containsLines`, which does fancy string comparison
 on the generated code,
 can be used instead of `containsElementsIn`.
 
-For `hasSourceEquivalentTo` and `generatesSources`, there is now `ContentsAsIterable`
+For `hasSourceEquivalentTo` and `generatesSources`, there is now `contentsAsIterable`
 which returns an `IterableSubject` containing all generated lines.
 You can run a similar check there using `.containsExactly("/* some java source  /*").inOrder()`
 
