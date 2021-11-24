@@ -1,31 +1,25 @@
 package com.google.testing.compile;
 
 import com.google.common.io.ByteSource;
-import com.google.common.truth.ExpectFailure;
 import com.google.common.truth.Truth;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import static com.google.common.truth.ExpectFailure.assertThat;
+import static com.google.common.truth.Truth.assertAbout;
 import static com.google.testing.compile.CompilationSubject.compilations;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static javax.tools.StandardLocation.CLASS_OUTPUT;
 
-@RunWith(JUnit4.class)
-public class CompilationSubjectGeneratedFilesTest {
-    @Rule
-    public final ExpectFailure expectFailure = new ExpectFailure();
+class CompilationSubjectGeneratedFilesTest {
 
     @Test
-    public void generatedSourceFile_fail() {
-        expectFailure
-                .whenTesting()
-                .about(compilations())
-                .that(CompilationSubjectTests.compilerWithGenerator().compile(CompilationSubjectTests.HELLO_WORLD_RESOURCE))
-                .generatedSourceFile("ThisIsNotTheRightFile");
-        AssertionError expected = expectFailure.getFailure();
+    void generatedSourceFile_fail() {
+        AssertionError expected = Assertions.assertThrows(
+                AssertionError.class,
+                () -> assertAbout(compilations())
+                        .that(CompilationSubjectTests.compilerWithGenerator().compile(CompilationSubjectTests.HELLO_WORLD_RESOURCE))
+                        .generatedSourceFile("ThisIsNotTheRightFile"));
         assertThat(expected)
                 .factValue("expected to generate file")
                 .isEqualTo("/ThisIsNotTheRightFile.java");
@@ -33,53 +27,50 @@ public class CompilationSubjectGeneratedFilesTest {
     }
 
     @Test
-    public void generatedFilePath() {
+    void generatedFilePath() {
         CompilationSubject.assertThat(CompilationSubjectTests.compilerWithGenerator().compile(CompilationSubjectTests.HELLO_WORLD_RESOURCE))
                 .generatedFile(CLASS_OUTPUT, "com/google/testing/compile/Foo")
                 .hasContents(ByteSource.wrap("Bar".getBytes(UTF_8)));
     }
 
     @Test
-    public void generatedFilePath_fail() {
-        expectFailure
-                .whenTesting()
-                .about(compilations())
-                .that(CompilationSubjectTests.compilerWithGenerator().compile(CompilationSubjectTests.HELLO_WORLD_RESOURCE))
-                .generatedFile(CLASS_OUTPUT, "com/google/testing/compile/Bogus.class");
-        AssertionError expected = expectFailure.getFailure();
+    void generatedFilePath_fail() {
+        AssertionError expected = Assertions.assertThrows(
+                AssertionError.class,
+                () -> assertAbout(compilations())
+                        .that(CompilationSubjectTests.compilerWithGenerator().compile(CompilationSubjectTests.HELLO_WORLD_RESOURCE))
+                        .generatedFile(CLASS_OUTPUT, "com/google/testing/compile/Bogus.class"));
         assertThat(expected)
                 .factValue("expected to generate file")
                 .isEqualTo("/com/google/testing/compile/Bogus.class");
     }
 
     @Test
-    public void generatedFilePackageFile() {
+    void generatedFilePackageFile() {
         CompilationSubject.assertThat(CompilationSubjectTests.compilerWithGenerator().compile(CompilationSubjectTests.HELLO_WORLD_RESOURCE))
                 .generatedFile(CLASS_OUTPUT, "com.google.testing.compile", "Foo")
                 .hasContents(ByteSource.wrap("Bar".getBytes(UTF_8)));
     }
 
     @Test
-    public void generatedFilePackageFile_fail() {
-        expectFailure
-                .whenTesting()
-                .about(compilations())
-                .that(CompilationSubjectTests.compilerWithGenerator().compile(CompilationSubjectTests.HELLO_WORLD_RESOURCE))
-                .generatedFile(CLASS_OUTPUT, "com.google.testing.compile", "Bogus.class");
-        AssertionError expected = expectFailure.getFailure();
+    void generatedFilePackageFile_fail() {
+        AssertionError expected = Assertions.assertThrows(
+                AssertionError.class,
+                () -> assertAbout(compilations())
+                        .that(CompilationSubjectTests.compilerWithGenerator().compile(CompilationSubjectTests.HELLO_WORLD_RESOURCE))
+                        .generatedFile(CLASS_OUTPUT, "com.google.testing.compile", "Bogus.class"));
         assertThat(expected)
                 .factValue("expected to generate file")
                 .isEqualTo("/com/google/testing/compile/Bogus.class");
     }
 
     @Test
-    public void generatedFileDefaultPackageFile_fail() {
-        expectFailure
-                .whenTesting()
-                .about(compilations())
-                .that(CompilationSubjectTests.compilerWithGenerator().compile(CompilationSubjectTests.HELLO_WORLD_RESOURCE))
-                .generatedFile(CLASS_OUTPUT, "", "File.java");
-        AssertionError expected = expectFailure.getFailure();
+    void generatedFileDefaultPackageFile_fail() {
+        AssertionError expected = Assertions.assertThrows(
+                AssertionError.class,
+                () -> assertAbout(compilations())
+                        .that(CompilationSubjectTests.compilerWithGenerator().compile(CompilationSubjectTests.HELLO_WORLD_RESOURCE))
+                        .generatedFile(CLASS_OUTPUT, "", "File.java"));
         assertThat(expected).factValue("expected to generate file").isEqualTo("/File.java");
         Truth.assertThat(expected.getMessage()).contains(GeneratingProcessor.GENERATED_CLASS_NAME);
     }
