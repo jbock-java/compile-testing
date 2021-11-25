@@ -15,20 +15,17 @@
  */
 package com.google.testing.compile;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 import static com.google.common.truth.Truth.assertThat;
 
 /**
  * Unit test for {@link TypeEnumerator}
  */
-@RunWith(JUnit4.class)
-public class TypeEnumeratorTest {
+class TypeEnumeratorTest {
 
     @Test
-    public void getTopLevelTypes_worksForNull() {
+    void getTopLevelTypes_worksForNull() {
         assertThat(TypeEnumerator.getTopLevelTypes(null)).isEmpty();
     }
 }
