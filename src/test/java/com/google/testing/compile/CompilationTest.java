@@ -16,10 +16,7 @@
 
 package com.google.testing.compile;
 
-import com.google.common.collect.ImmutableList;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 import javax.tools.JavaFileObject;
 
@@ -28,9 +25,8 @@ import static com.google.common.truth.Truth8.assertThat;
 import static com.google.testing.compile.CompilationSubject.assertThat;
 import static com.google.testing.compile.Compiler.javac;
 import static javax.tools.StandardLocation.SOURCE_OUTPUT;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
-@RunWith(JUnit4.class)
 public class CompilationTest {
 
     private static final JavaFileObject source1 =
@@ -55,7 +51,7 @@ public class CompilationTest {
                     "interface BrokenSource { what is this }");
 
     @Test
-    public void compiler() {
+    void compiler() {
         Compiler compiler = compilerWithGenerator();
         Compilation compilation = compiler.compile(source1, source2);
         assertThat(compilation.compiler()).isEqualTo(compiler);
@@ -64,7 +60,7 @@ public class CompilationTest {
     }
 
     @Test
-    public void compilerStatusFailure() {
+    void compilerStatusFailure() {
         Compiler compiler = compilerWithGenerator();
         Compilation compilation = compiler.compile(brokenSource);
         assertThat(compilation.status()).isEqualTo(Compilation.Status.FAILURE);
@@ -73,21 +69,21 @@ public class CompilationTest {
     }
 
     @Test
-    public void generatedFilePath() {
+    void generatedFilePath() {
         Compiler compiler = compilerWithGenerator();
         Compilation compilation = compiler.compile(source1, source2);
         assertThat(compilation.generatedFile(SOURCE_OUTPUT, "test/generated/Blah.java")).isPresent();
     }
 
     @Test
-    public void generatedFilePackage() {
+    void generatedFilePackage() {
         Compiler compiler = compilerWithGenerator();
         Compilation compilation = compiler.compile(source1, source2);
         assertThat(compilation.generatedFile(SOURCE_OUTPUT, "test.generated", "Blah.java")).isPresent();
     }
 
     @Test
-    public void generatedSourceFile() {
+    void generatedSourceFile() {
         Compiler compiler = compilerWithGenerator();
         Compilation compilation = compiler.compile(source1, source2);
         assertThat(compilation.generatedSourceFile("test.generated.Blah")).isPresent();
@@ -98,7 +94,7 @@ public class CompilationTest {
     }
 
     @Test
-    public void generatedFiles_unsuccessfulCompilationThrows() {
+    void generatedFiles_unsuccessfulCompilationThrows() {
         Compilation compilation =
                 javac()
                         .compile(
@@ -106,14 +102,14 @@ public class CompilationTest {
                                         "test.Bad", "package test;", "", "this doesn't compile!"));
         assertThat(compilation).failed();
         try {
-            ImmutableList<JavaFileObject> unused = compilation.generatedFiles();
+            compilation.generatedFiles();
             fail();
         } catch (IllegalStateException expected) {
         }
     }
 
     @Test
-    public void describeFailureDiagnostics_includesWarnings_whenCompilingWerror() {
+    void describeFailureDiagnostics_includesWarnings_whenCompilingWerror() {
         // Arrange
         Compiler compiler = javac().withOptions("-Xlint:cast", "-Werror");
         JavaFileObject source =
