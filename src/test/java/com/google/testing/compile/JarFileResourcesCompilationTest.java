@@ -16,17 +16,15 @@
 package com.google.testing.compile;
 
 import com.google.common.io.Resources;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 
@@ -39,24 +37,22 @@ import static com.google.testing.compile.JavaSourceSubjectFactory.javaSource;
  * @author Gregory Kick
  * @author Christian Gruber
  */
-@RunWith(JUnit4.class)
-public class JarFileResourcesCompilationTest {
-    @Rule
-    public TemporaryFolder folder = new TemporaryFolder();
-    private File jarFile;
+class JarFileResourcesCompilationTest {
 
-    @Before
-    public void createJarFile() throws IOException {
-        this.jarFile = folder.newFile("test.jar");
+    private File createJarFile(Path temporaryFolder) throws IOException {
+        File jarFile = temporaryFolder.resolve("test.jar").toFile();
+        Assertions.assertTrue(jarFile.createNewFile());
         JarOutputStream out = new JarOutputStream(new FileOutputStream(jarFile));
         JarEntry helloWorldEntry = new JarEntry("test/HelloWorld.java");
         out.putNextEntry(helloWorldEntry);
         out.write(Resources.toByteArray(Resources.getResource("test/HelloWorld.java")));
         out.close();
+        return jarFile;
     }
 
     @Test
-    public void compilesResourcesInJarFiles() throws IOException {
+    void compilesResourcesInJarFiles(@TempDir Path temporaryFolder) throws IOException {
+        File jarFile = createJarFile(temporaryFolder);
         assert_().about(javaSource())
                 .that(JavaFileObjects.forResource(
                         new URL("jar:" + jarFile.toURI() + "!/test/HelloWorld.java")))
