@@ -1,30 +1,24 @@
 package com.google.testing.compile;
 
-import com.google.common.truth.ExpectFailure;
 import com.google.common.truth.Truth;
-import org.junit.Rule;
-import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
+import static com.google.common.truth.Truth.assertAbout;
 import static com.google.testing.compile.CompilationSubject.assertThat;
 import static com.google.testing.compile.CompilationSubject.compilations;
 import static com.google.testing.compile.Compiler.javac;
 
-@RunWith(JUnit4.class)
-public class CompilationSubjectStatusTest {
-    @Rule
-    public final ExpectFailure expectFailure = new ExpectFailure();
+class CompilationSubjectStatusTest {
 
     @Test
-    public void succeeded() {
+    void succeeded() {
         assertThat(javac().compile(CompilationSubjectTests.HELLO_WORLD)).succeeded();
         assertThat(javac().compile(CompilationSubjectTests.HELLO_WORLD_RESOURCE)).succeeded();
     }
 
     @Test
-    public void succeeded_failureReportsGeneratedFiles() {
+    void succeeded_failureReportsGeneratedFiles() {
         Compilation compilation = CompilationSubjectTests.compilerWithGeneratorAndError()
                 .compile(CompilationSubjectTests.HELLO_WORLD_RESOURCE);
         AssertionError expected = Assertions.assertThrows(AssertionError.class, () ->
@@ -38,7 +32,7 @@ public class CompilationSubjectStatusTest {
     }
 
     @Test
-    public void succeeded_failureReportsNoGeneratedFiles() {
+    void succeeded_failureReportsNoGeneratedFiles() {
         Compilation compilation = CompilationSubjectTests.compilerWithGeneratorAndError()
                 .compile(CompilationSubjectTests.HELLO_WORLD_BROKEN_RESOURCE);
         AssertionError expected = Assertions.assertThrows(AssertionError.class, () ->
@@ -50,7 +44,7 @@ public class CompilationSubjectStatusTest {
     }
 
     @Test
-    public void succeeded_exceptionCreatedOrPassedThrough() {
+    void succeeded_exceptionCreatedOrPassedThrough() {
         RuntimeException e = new RuntimeException();
         RuntimeException expected = Assertions.assertThrows(RuntimeException.class, () -> Truth.assertAbout(compilations())
                 .that(CompilationSubjectTests.throwingCompiler(e).compile(CompilationSubjectTests.HELLO_WORLD_RESOURCE))
@@ -59,7 +53,7 @@ public class CompilationSubjectStatusTest {
     }
 
     @Test
-    public void succeeded_failureReportsWarnings() {
+    void succeeded_failureReportsWarnings() {
         Compilation compilation = CompilationSubjectTests.compilerWithWarning()
                 .compile(CompilationSubjectTests.HELLO_WORLD_BROKEN);
         AssertionError expected = Assertions.assertThrows(AssertionError.class, () ->
@@ -75,35 +69,33 @@ public class CompilationSubjectStatusTest {
     }
 
     @Test
-    public void succeededWithoutWarnings() {
+    void succeededWithoutWarnings() {
         assertThat(javac().compile(CompilationSubjectTests.HELLO_WORLD)).succeededWithoutWarnings();
     }
 
     @Test
-    public void succeededWithoutWarnings_failsWithWarnings() {
-        expectFailure
-                .whenTesting()
-                .about(compilations())
-                .that(CompilationSubjectTests.compilerWithWarning().compile(CompilationSubjectTests.HELLO_WORLD))
-                .succeededWithoutWarnings();
-        AssertionError expected = expectFailure.getFailure();
+    void succeededWithoutWarnings_failsWithWarnings() {
+        AssertionError expected = Assertions.assertThrows(
+                AssertionError.class,
+                () -> assertAbout(compilations())
+                        .that(CompilationSubjectTests.compilerWithWarning().compile(CompilationSubjectTests.HELLO_WORLD))
+                        .succeededWithoutWarnings());
         Truth.assertThat(expected.getMessage())
                 .contains("Expected 0 warnings, but found the following 2 warnings:\n");
     }
 
     @Test
-    public void failedToCompile() {
+    void failedToCompile() {
         assertThat(javac().compile(CompilationSubjectTests.HELLO_WORLD_BROKEN_RESOURCE)).failed();
     }
 
     @Test
-    public void failedToCompile_compilationSucceeded() {
-        expectFailure
-                .whenTesting()
-                .about(compilations())
-                .that(javac().compile(CompilationSubjectTests.HELLO_WORLD_RESOURCE))
-                .failed();
-        AssertionError expected = expectFailure.getFailure();
+    void failedToCompile_compilationSucceeded() {
+        AssertionError expected = Assertions.assertThrows(
+                AssertionError.class,
+                () -> assertAbout(compilations())
+                        .that(javac().compile(CompilationSubjectTests.HELLO_WORLD_RESOURCE))
+                        .failed());
         Truth.assertThat(expected.getMessage())
                 .startsWith("Compilation was expected to fail, but contained no errors");
         Truth.assertThat(expected.getMessage()).contains("No files were generated.");
