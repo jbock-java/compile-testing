@@ -16,25 +16,21 @@
 
 package com.google.testing.compile;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import javax.tools.JavaFileObject;
+import java.util.Arrays;
+import java.util.Collections;
+
 import static com.google.common.truth.ExpectFailure.assertThat;
+import static com.google.common.truth.Truth.assertAbout;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.testing.compile.JavaFileObjectSubject.assertThat;
 import static com.google.testing.compile.JavaFileObjectSubject.javaFileObjects;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import com.google.common.truth.ExpectFailure;
-import java.util.Arrays;
-import java.util.Collections;
-import javax.tools.JavaFileObject;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-
-@RunWith(JUnit4.class)
-public final class JavaFileObjectSubjectTest {
-    @Rule
-    public final ExpectFailure expectFailure = new ExpectFailure();
+final class JavaFileObjectSubjectTest {
 
     private static final JavaFileObject CLASS =
             JavaFileObjects.forSourceLines(
@@ -69,35 +65,33 @@ public final class JavaFileObjectSubjectTest {
                     "}");
 
     @Test
-    public void hasContents() {
+    void hasContents() {
         assertThat(CLASS_WITH_FIELD).hasContents(JavaFileObjects.asByteSource(CLASS_WITH_FIELD));
     }
 
     @Test
-    public void hasContents_failure() {
-        expectFailure
-                .whenTesting()
-                .about(javaFileObjects())
-                .that(CLASS_WITH_FIELD)
-                .hasContents(JavaFileObjects.asByteSource(DIFFERENT_NAME));
-        AssertionError expected = expectFailure.getFailure();
+    void hasContents_failure() {
+        AssertionError expected = Assertions.assertThrows(
+                AssertionError.class,
+                () -> assertAbout(javaFileObjects())
+                        .that(CLASS_WITH_FIELD)
+                        .hasContents(JavaFileObjects.asByteSource(DIFFERENT_NAME)));
         assertThat(expected.getMessage()).contains(CLASS_WITH_FIELD.getName());
     }
 
     @Test
-    public void contentsAsString() {
+    void contentsAsString() {
         assertThat(CLASS_WITH_FIELD).contentsAsString(UTF_8).containsMatch("Object +field;");
     }
 
     @Test
-    public void contentsAsString_fail() {
-        expectFailure
-                .whenTesting()
-                .about(javaFileObjects())
-                .that(CLASS)
-                .contentsAsString(UTF_8)
-                .containsMatch("bad+");
-        AssertionError expected = expectFailure.getFailure();
+    void contentsAsString_fail() {
+        AssertionError expected = Assertions.assertThrows(
+                AssertionError.class,
+                () -> assertAbout(javaFileObjects())
+                        .that(CLASS)
+                        .contentsAsString(UTF_8)
+                        .containsMatch("bad+"));
         assertThat(expected).factValue("value of").isEqualTo("javaFileObject.contents()");
         assertThat(expected).factValue("javaFileObject was").startsWith(CLASS.getName());
         assertThat(expected).factValue("expected to contain a match for").isEqualTo("bad+");
@@ -144,29 +138,28 @@ public final class JavaFileObjectSubjectTest {
                     "}");
 
     @Test
-    public void containsLines_completeMatch() {
+    void containsLines_completeMatch() {
         assertThat(SAMPLE_ACTUAL_FILE_FOR_MATCHING).containsLines(SAMPLE_ACTUAL_FILE_FOR_MATCHING);
     }
 
     @Test
-    public void containsLines_failOnEmpty() {
+    void containsLines_failOnEmpty() {
         assertThat(SAMPLE_ACTUAL_FILE_FOR_MATCHING).containsLines(Collections.emptyList());
     }
 
     @Test
-    public void containsLines_fail_longSubsequence() {
-        expectFailure
-                .whenTesting()
-                .about(javaFileObjects())
-                .that(UNKNOWN_TYPES)
-                .containsLines(
-                        "package test;",
-                        "",
-                        "// extra line",
-                        "public class TestClass {",
-                        "  Bar badMethod(Baz baz) { return baz.what(); }",
-                        "}");
-        AssertionError expected = expectFailure.getFailure();
+    void containsLines_fail_longSubsequence() {
+        AssertionError expected = Assertions.assertThrows(
+                AssertionError.class,
+                () -> assertAbout(javaFileObjects())
+                        .that(UNKNOWN_TYPES)
+                        .containsLines(
+                                "package test;",
+                                "",
+                                "// extra line",
+                                "public class TestClass {",
+                                "  Bar badMethod(Baz baz) { return baz.what(); }",
+                                "}"));
         assertThat(expected.getMessage()).contains(String.join("\n", Arrays.asList(
                 "for file:",
                 "    test/TestClass.java",
@@ -188,19 +181,18 @@ public final class JavaFileObjectSubjectTest {
     }
 
     @Test
-    public void containsLines_fail_longSubsequenceTrailing() {
-        expectFailure
-                .whenTesting()
-                .about(javaFileObjects())
-                .that(UNKNOWN_TYPES)
-                .containsLines(
-                        "package test;",
-                        "",
-                        "public class TestClass {",
-                        "  Bar badMethod(Baz baz) { return baz.what(); }",
-                        "}",
-                        "// extra line");
-        AssertionError expected = expectFailure.getFailure();
+    void containsLines_fail_longSubsequenceTrailing() {
+        AssertionError expected = Assertions.assertThrows(
+                AssertionError.class,
+                () -> assertAbout(javaFileObjects())
+                        .that(UNKNOWN_TYPES)
+                        .containsLines(
+                                "package test;",
+                                "",
+                                "public class TestClass {",
+                                "  Bar badMethod(Baz baz) { return baz.what(); }",
+                                "}",
+                                "// extra line"));
         assertThat(expected.getMessage()).contains(String.join("\n", Arrays.asList(
                 "for file:",
                 "    test/TestClass.java",
@@ -222,7 +214,7 @@ public final class JavaFileObjectSubjectTest {
     }
 
     @Test
-    public void containsLinesIn_match() {
+    void containsLinesIn_match() {
         assertThat(SAMPLE_ACTUAL_FILE_FOR_MATCHING).containsLines(
                 "public class SomeFile {",
                 "  private static final int CONSTANT_TIMES_3 = CONSTANT * 3;",
@@ -231,18 +223,17 @@ public final class JavaFileObjectSubjectTest {
     }
 
     @Test
-    public void containsLinesIn_failNoMatch() {
-        expectFailure
-                .whenTesting()
-                .about(javaFileObjects())
-                .that(SAMPLE_ACTUAL_FILE_FOR_MATCHING)
-                .containsLines(
-                        "public class SomeFile {",
-                        "  private static final int CONSTANT_TIMES_3 = CONSTANT * 3;",
-                        "  private static final int CONSTANT_TIMES_4 = CONSTANT * 4;",
-                        "  private static final int CONSTANT_TIMES_3 = CONSTANT * 3;",
-                        "}");
-        AssertionError expected = expectFailure.getFailure();
+    void containsLinesIn_failNoMatch() {
+        AssertionError expected = Assertions.assertThrows(
+                AssertionError.class,
+                () -> assertAbout(javaFileObjects())
+                        .that(SAMPLE_ACTUAL_FILE_FOR_MATCHING)
+                        .containsLines(
+                                "public class SomeFile {",
+                                "  private static final int CONSTANT_TIMES_3 = CONSTANT * 3;",
+                                "  private static final int CONSTANT_TIMES_4 = CONSTANT * 4;",
+                                "  private static final int CONSTANT_TIMES_3 = CONSTANT * 3;",
+                                "}"));
         assertThat(expected.getMessage()).contains(String.join("\n", Arrays.asList(
                 "unmatched:",
                 "    3: \"  private static final int CONSTANT_TIMES_3 = CONSTANT * 3;\"",
