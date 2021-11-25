@@ -15,26 +15,23 @@
  */
 package com.google.testing.compile;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 
 import static com.google.common.truth.Truth.assertThat;
 import static javax.tools.JavaFileObject.Kind.CLASS;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  *  Tests {@link JavaFileObjects}.
  *
  *  @author Gregory Kick
  */
-@RunWith(JUnit4.class)
-public class JavaFileObjectsTest {
+class JavaFileObjectsTest {
     @Test
-    public void forResource_inJarFile() {
+    void forResource_inJarFile() {
         JavaFileObject resourceInJar =
                 JavaFileObjects.forResource("com/google/testing/compile/JavaFileObjectsTest.class");
         assertThat(resourceInJar.getKind()).isEqualTo(CLASS);
@@ -46,7 +43,7 @@ public class JavaFileObjectsTest {
     }
 
     @Test
-    public void forSourceLines() throws IOException {
+    void forSourceLines() throws IOException {
         JavaFileObject fileObject = JavaFileObjects.forSourceLines("example.HelloWorld",
                 "package example;",
                 "",
@@ -66,7 +63,7 @@ public class JavaFileObjectsTest {
     }
 
     @Test
-    public void forSourceLinesWithoutName() {
+    void forSourceLinesWithoutName() {
         try {
             JavaFileObjects.forSourceLines(
                     "package example;",
