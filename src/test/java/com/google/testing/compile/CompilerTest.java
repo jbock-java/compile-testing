@@ -17,11 +17,8 @@ package com.google.testing.compile;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
@@ -43,6 +40,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Set;
@@ -55,29 +53,24 @@ import static com.google.testing.compile.CompilationSubject.assertThat;
 import static com.google.testing.compile.Compiler.javac;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Tests for {@link Compiler}. */
-@RunWith(JUnit4.class)
 public final class CompilerTest {
-
-    @Rule
-    public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private static final JavaFileObject HELLO_WORLD =
             JavaFileObjects.forResource("test/HelloWorld.java");
 
     @Test
-    public void options() {
+    void options() {
         NoOpProcessor processor = new NoOpProcessor();
         Object[] options1 = {"-Agone=nowhere"};
         JavaFileObject[] files = {HELLO_WORLD};
-        Compilation unused =
-                javac()
-                        .withOptions(options1)
-                        .withOptions(ImmutableList.of("-Ab=2", "-Ac=3"))
-                        .withProcessors(processor)
-                        .compile(files);
+        javac()
+                .withOptions(options1)
+                .withOptions(ImmutableList.of("-Ab=2", "-Ac=3"))
+                .withProcessors(processor)
+                .compile(files);
         assertThat(processor.options)
                 .containsExactly(
                         "b", "2",
@@ -86,7 +79,7 @@ public final class CompilerTest {
     }
 
     @Test
-    public void multipleProcesors() {
+    void multipleProcesors() {
         NoOpProcessor noopProcessor1 = new NoOpProcessor();
         NoOpProcessor noopProcessor2 = new NoOpProcessor();
         NoOpProcessor noopProcessor3 = new NoOpProcessor();
@@ -95,18 +88,17 @@ public final class CompilerTest {
         assertThat(noopProcessor3.invoked).isFalse();
         Processor[] processors = {noopProcessor1, noopProcessor3};
         JavaFileObject[] files = {HELLO_WORLD};
-        Compilation unused =
-                javac()
-                        .withProcessors(processors)
-                        .withProcessors(noopProcessor1, noopProcessor2)
-                        .compile(files);
+        javac()
+                .withProcessors(processors)
+                .withProcessors(noopProcessor1, noopProcessor2)
+                .compile(files);
         assertThat(noopProcessor1.invoked).isTrue();
         assertThat(noopProcessor2.invoked).isTrue();
         assertThat(noopProcessor3.invoked).isFalse();
     }
 
     @Test
-    public void multipleProcesors_asIterable() {
+    void multipleProcesors_asIterable() {
         NoOpProcessor noopProcessor1 = new NoOpProcessor();
         NoOpProcessor noopProcessor2 = new NoOpProcessor();
         NoOpProcessor noopProcessor3 = new NoOpProcessor();
@@ -114,18 +106,17 @@ public final class CompilerTest {
         assertThat(noopProcessor2.invoked).isFalse();
         assertThat(noopProcessor3.invoked).isFalse();
         JavaFileObject[] files = {HELLO_WORLD};
-        Compilation unused =
-                javac()
-                        .withProcessors(Arrays.asList(noopProcessor1, noopProcessor3))
-                        .withProcessors(Arrays.asList(noopProcessor1, noopProcessor2))
-                        .compile(files);
+        javac()
+                .withProcessors(Arrays.asList(noopProcessor1, noopProcessor3))
+                .withProcessors(Arrays.asList(noopProcessor1, noopProcessor2))
+                .compile(files);
         assertThat(noopProcessor1.invoked).isTrue();
         assertThat(noopProcessor2.invoked).isTrue();
         assertThat(noopProcessor3.invoked).isFalse();
     }
 
     @Test
-    public void classPath_default() {
+    void classPath_default() {
         Compilation compilation =
                 javac()
                         .compile(
@@ -139,7 +130,7 @@ public final class CompilerTest {
     }
 
     @Test
-    public void classPath_empty() {
+    void classPath_empty() {
         Compilation compilation =
                 javac()
                         .withClasspath(ImmutableList.of())
@@ -154,8 +145,9 @@ public final class CompilerTest {
     }
 
     /** Sets up a jar containing a single class 'Lib', for use in classpath tests. */
-    private File compileTestLib() throws IOException {
-        File lib = temporaryFolder.newFolder("tmp");
+    private File compileTestLib(Path temporaryFolder) throws IOException {
+        File lib = temporaryFolder.resolve("tmp").toFile();
+        assertTrue(lib.mkdirs());
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         StandardJavaFileManager fileManager =
                 compiler.getStandardFileManager(/* diagnosticListener= */ null, Locale.getDefault(), UTF_8);
@@ -173,8 +165,8 @@ public final class CompilerTest {
     }
 
     @Test
-    public void classPath_customFiles() throws Exception {
-        File lib = compileTestLib();
+    void classPath_customFiles(@TempDir Path temporaryFolder) throws Exception {
+        File lib = compileTestLib(temporaryFolder);
         // compile with only 'Lib' on the classpath
         Compilation compilation =
                 javac()
@@ -190,7 +182,7 @@ public final class CompilerTest {
     }
 
     @Test
-    public void classPath_empty_urlClassLoader() {
+    void classPath_empty_urlClassLoader() {
         Compilation compilation =
                 javac()
                         .withClasspathFrom(new URLClassLoader(new URL[0], Compiler.platformClassLoader))
@@ -205,8 +197,8 @@ public final class CompilerTest {
     }
 
     @Test
-    public void classPath_customFiles_urlClassLoader() throws Exception {
-        File lib = compileTestLib();
+    void classPath_customFiles_urlClassLoader(@TempDir Path temporaryFolder) throws Exception {
+        File lib = compileTestLib(temporaryFolder);
         Compilation compilation =
                 javac()
                         .withClasspathFrom(new URLClassLoader(new URL[]{lib.toURI().toURL()}))
@@ -216,7 +208,7 @@ public final class CompilerTest {
     }
 
     @Test
-    public void annotationProcessorPath_empty() {
+    void annotationProcessorPath_empty() {
         AnnotationFileProcessor processor = new AnnotationFileProcessor();
         Compiler compiler =
                 javac().withProcessors(processor).withAnnotationProcessorPath(ImmutableList.of());
@@ -224,14 +216,12 @@ public final class CompilerTest {
                 assertThrows(
                         RuntimeException.class,
                         () -> compiler.compile(JavaFileObjects.forSourceLines("Test", "class Test {}")));
-        assumeTrue(
-                isJdk9OrLater()); // with JDK 8, NullPointerException is thrown instead of the expected
         // exception, and this bug is fixed after JDK 8
         assertThat(expected).hasCauseThat().hasCauseThat().hasMessageThat().contains("tmp.txt");
     }
 
     @Test
-    public void annotationProcessorPath_customFiles() throws Exception {
+    void annotationProcessorPath_customFiles() throws Exception {
         AnnotationFileProcessor processor = new AnnotationFileProcessor();
         File jar = compileTestJar();
         // compile with only 'tmp.txt' on the annotation processor path
@@ -243,8 +233,9 @@ public final class CompilerTest {
         assertThat(compilation).succeeded();
     }
 
-    @Test // See https://github.com/google/compile-testing/issues/189
-    public void readInputFile() throws IOException {
+    @Test
+        // See https://github.com/google/compile-testing/issues/189
+    void readInputFile() throws IOException {
         AtomicReference<String> content = new AtomicReference<>();
         Compilation compilation =
                 javac()
@@ -298,16 +289,11 @@ public final class CompilerTest {
     }
 
     @Test
-    public void releaseFlag() {
-        assumeTrue(isJdk9OrLater());
+    void releaseFlag() {
         Compilation compilation =
                 javac()
                         .withOptions("--release", "8")
                         .compile(JavaFileObjects.forSourceString("HelloWorld", "final class HelloWorld {}"));
         assertThat(compilation).succeeded();
-    }
-
-    static boolean isJdk9OrLater() {
-        return SourceVersion.latestSupported().compareTo(SourceVersion.RELEASE_8) > 0;
     }
 }
