@@ -16,12 +16,12 @@
 
 package com.google.testing.compile;
 
+import com.google.common.truth.Truth;
 import org.junit.jupiter.api.Test;
 
 import javax.tools.JavaFileObject;
 
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.Truth8.assertThat;
 import static com.google.testing.compile.CompilationSubject.assertThat;
 import static com.google.testing.compile.Compiler.javac;
 import static javax.tools.StandardLocation.SOURCE_OUTPUT;
@@ -72,21 +72,21 @@ public class CompilationTest {
     void generatedFilePath() {
         Compiler compiler = compilerWithGenerator();
         Compilation compilation = compiler.compile(source1, source2);
-        assertThat(compilation.generatedFile(SOURCE_OUTPUT, "test/generated/Blah.java")).isPresent();
+        Truth.assertThat(compilation.generatedFile(SOURCE_OUTPUT, "test/generated/Blah.java")).isPresent();
     }
 
     @Test
     void generatedFilePackage() {
         Compiler compiler = compilerWithGenerator();
         Compilation compilation = compiler.compile(source1, source2);
-        assertThat(compilation.generatedFile(SOURCE_OUTPUT, "test.generated", "Blah.java")).isPresent();
+        Truth.assertThat(compilation.generatedFile(SOURCE_OUTPUT, "test.generated", "Blah.java")).isPresent();
     }
 
     @Test
     void generatedSourceFile() {
         Compiler compiler = compilerWithGenerator();
         Compilation compilation = compiler.compile(source1, source2);
-        assertThat(compilation.generatedSourceFile("test.generated.Blah")).isPresent();
+        Truth.assertThat(compilation.generatedSourceFile("test.generated.Blah")).isPresent();
     }
 
     private static Compiler compilerWithGenerator() {
