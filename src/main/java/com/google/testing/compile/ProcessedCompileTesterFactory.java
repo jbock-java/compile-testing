@@ -59,7 +59,7 @@ public interface ProcessedCompileTesterFactory {
     ProcessedCompileTesterFactory withClasspath(Iterable<File> classPath);
 
     /** Adds {@linkplain Processor annotation processors} to the compilation being tested. */
-    CompileTester processedWith(Processor first, Processor... rest);
+    CompileTester processedWith(Processor first);
 
     /** Adds {@linkplain Processor annotation processors} to the compilation being tested. */
     CompileTester processedWith(Iterable<? extends Processor> processors);

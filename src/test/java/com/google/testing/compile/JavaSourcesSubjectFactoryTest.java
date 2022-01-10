@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import java.util.Arrays;
+import java.util.List;
 
 import static com.google.common.truth.ExpectFailure.assertThat;
 import static com.google.common.truth.Truth.assertAbout;
@@ -734,7 +735,7 @@ class JavaSourcesSubjectFactoryTest {
         assertThat(noopProcessor2.invoked).isFalse();
         assertAbout(javaSource())
                 .that(HELLO_WORLD_RESOURCE)
-                .processedWith(noopProcessor1, noopProcessor2)
+                .processedWith(List.of(noopProcessor1, noopProcessor2))
                 .compilesWithoutError();
         assertThat(noopProcessor1.invoked).isTrue();
         assertThat(noopProcessor2.invoked).isTrue();

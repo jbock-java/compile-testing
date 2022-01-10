@@ -15,10 +15,7 @@
  */
 package com.google.testing.compile;
 
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteSource;
 import com.google.common.io.Resources;
 
@@ -37,9 +34,11 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static javax.tools.JavaFileObject.Kind.SOURCE;
 
 /**
@@ -60,16 +59,14 @@ public final class JavaFileObjects {
      * source and compilation errors may result if they do not match.
      */
     public static JavaFileObject forSourceString(String fullyQualifiedName, String source) {
-        checkNotNull(fullyQualifiedName);
+        Preconditions.checkNotNull(fullyQualifiedName);
         if (fullyQualifiedName.startsWith("package ")) {
             throw new IllegalArgumentException(
                     String.format("fullyQualifiedName starts with \"package\" (%s). Did you forget to "
                             + "specify the name and specify just the source text?", fullyQualifiedName));
         }
-        return new StringSourceJavaFileObject(fullyQualifiedName, checkNotNull(source));
+        return new StringSourceJavaFileObject(fullyQualifiedName, Preconditions.checkNotNull(source));
     }
-
-    private static final Joiner LINE_JOINER = Joiner.on('\n');
 
     /**
      * Behaves exactly like {@link #forSourceString}, but joins lines so that multi-line source
@@ -91,7 +88,7 @@ public final class JavaFileObjects {
 
     /** An overload of {@code #forSourceLines} that takes an {@code Iterable<String>}. */
     public static JavaFileObject forSourceLines(String fullyQualifiedName, Iterable<String> lines) {
-        return forSourceString(fullyQualifiedName, LINE_JOINER.join(lines));
+        return forSourceString(fullyQualifiedName, StreamSupport.stream(lines.spliterator(), false).collect(Collectors.joining("\n")));
     }
 
     private static final class StringSourceJavaFileObject extends SimpleJavaFileObject {
@@ -106,7 +103,7 @@ public final class JavaFileObjects {
         }
 
         static URI createUri(String fullyQualifiedClassName) {
-            return URI.create(CharMatcher.is('.').replaceFrom(fullyQualifiedClassName, '/')
+            return URI.create(fullyQualifiedClassName.replace('.', '/')
                     + SOURCE.extension);
         }
 
@@ -160,7 +157,11 @@ public final class JavaFileObjects {
      * {@code forResource(Resources.getResource(resourceName))}.
      */
     public static JavaFileObject forResource(String resourceName) {
-        return forResource(Resources.getResource(resourceName));
+        ClassLoader loader =
+                Thread.currentThread().getContextClassLoader();
+        URL url = loader.getResource(resourceName);
+        Preconditions.checkArgument(url != null, "resource %s not found.", resourceName);
+        return forResource(url);
     }
 
     static Kind deduceKind(URI uri) {
@@ -193,7 +194,7 @@ public final class JavaFileObjects {
         static final Splitter JAR_URL_SPLITTER = Splitter.on('!');
 
         static final URI getPathUri(URL jarUrl) {
-            ImmutableList<String> parts = ImmutableList.copyOf(JAR_URL_SPLITTER.split(jarUrl.getPath()));
+            List<String> parts = Util.listOf(JAR_URL_SPLITTER.split(jarUrl.getPath()));
             checkArgument(parts.size() == 2,
                     "The jar url separator (!) appeared more than once in the url: %s", jarUrl);
             String pathPart = parts.get(1);

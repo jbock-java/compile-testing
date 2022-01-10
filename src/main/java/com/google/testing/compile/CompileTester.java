@@ -16,11 +16,12 @@
 package com.google.testing.compile;
 
 import com.google.common.io.ByteSource;
-import java.nio.charset.Charset;
-import java.util.List;
+
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
+import java.nio.charset.Charset;
+import java.util.List;
 
 /**
  * The root of the fluent API for testing the result of compilation.

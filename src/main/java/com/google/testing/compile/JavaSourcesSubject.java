@@ -15,12 +15,6 @@
  */
 package com.google.testing.compile;
 
-import static com.google.common.truth.Fact.simpleFact;
-import static com.google.common.truth.Truth.assertAbout;
-import static com.google.testing.compile.CompilationSubject.compilations;
-import static com.google.testing.compile.Compiler.javac;
-import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -31,15 +25,22 @@ import com.google.common.truth.Subject;
 import com.google.testing.compile.CompilationSubject.DiagnosticAtColumn;
 import com.google.testing.compile.CompilationSubject.DiagnosticInFile;
 import com.google.testing.compile.CompilationSubject.DiagnosticOnLine;
+
+import javax.annotation.processing.Processor;
+import javax.tools.JavaFileManager;
+import javax.tools.JavaFileObject;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import javax.annotation.processing.Processor;
-import javax.tools.JavaFileManager;
-import javax.tools.JavaFileObject;
+
+import static com.google.common.truth.Fact.simpleFact;
+import static com.google.common.truth.Truth.assertAbout;
+import static com.google.testing.compile.CompilationSubject.compilations;
+import static com.google.testing.compile.Compiler.javac;
+import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
 
 /**
  * A <a href="https://github.com/truth0/truth">Truth</a> {@link Subject} that evaluates the result
@@ -91,8 +92,8 @@ public final class JavaSourcesSubject extends Subject
     }
 
     @Override
-    public CompileTester processedWith(Processor first, Processor... rest) {
-        return processedWith(Lists.asList(first, rest));
+    public CompileTester processedWith(Processor first) {
+        return processedWith(List.of(first));
     }
 
     @Override
@@ -466,8 +467,8 @@ public final class JavaSourcesSubject extends Subject
         }
 
         @Override
-        public CompileTester processedWith(Processor first, Processor... rest) {
-            return delegate.newCompilationClause(Lists.asList(first, rest));
+        public CompileTester processedWith(Processor first) {
+            return delegate.newCompilationClause(List.of(first));
         }
 
         @Override
