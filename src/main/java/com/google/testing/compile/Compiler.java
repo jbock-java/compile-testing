@@ -17,12 +17,6 @@ package com.google.testing.compile;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Splitter;
-import com.google.common.base.StandardSystemProperty;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import com.google.testing.compile.Compilation.Status;
 
 import javax.annotation.processing.Processor;
@@ -36,10 +30,14 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Functions.toStringFunction;
 import static com.google.common.collect.ImmutableList.toImmutableList;
@@ -60,24 +58,24 @@ public abstract class Compiler {
     /** Returns a {@link Compiler} that uses a given {@link JavaCompiler} instance. */
     public static Compiler compiler(JavaCompiler javaCompiler) {
         return new AutoValue_Compiler(
-                javaCompiler, ImmutableList.of(), ImmutableList.of(), Optional.empty(), Optional.empty());
+                javaCompiler, List.of(), List.of(), Optional.empty(), Optional.empty());
     }
 
     abstract JavaCompiler javaCompiler();
 
     /** The annotation processors applied during compilation. */
-    public abstract ImmutableList<Processor> processors();
+    public abstract List<Processor> processors();
 
     /** The options passed to the compiler. */
-    public abstract ImmutableList<String> options();
+    public abstract List<String> options();
 
     /** The compilation class path. If not present, the system class path is used. */
-    public abstract Optional<ImmutableList<File>> classPath();
+    public abstract Optional<List<File>> classPath();
 
     /**
      * The annotation processor path. If not present, the system annotation processor path is used.
      */
-    public abstract Optional<ImmutableList<File>> annotationProcessorPath();
+    public abstract Optional<List<File>> annotationProcessorPath();
 
     /**
      * Uses annotation processors during compilation. These replace any previously specified.
@@ -87,7 +85,7 @@ public abstract class Compiler {
      * @return a new instance with the same options and the given processors
      */
     public final Compiler withProcessors(Processor... processors) {
-        return withProcessors(ImmutableList.copyOf(processors));
+        return withProcessors(Arrays.asList(processors));
     }
 
     /**
@@ -99,7 +97,7 @@ public abstract class Compiler {
      */
     public final Compiler withProcessors(Iterable<? extends Processor> processors) {
         return copy(
-                ImmutableList.copyOf(processors), options(), classPath(), annotationProcessorPath());
+                Util.listOf(processors), options(), classPath(), annotationProcessorPath());
     }
 
     /**
@@ -108,7 +106,7 @@ public abstract class Compiler {
      * @return a new instance with the same processors and the given options
      */
     public final Compiler withOptions(Object... options) {
-        return withOptions(ImmutableList.copyOf(options));
+        return withOptions(Arrays.asList(options));
     }
 
     /**
@@ -116,10 +114,10 @@ public abstract class Compiler {
      *
      * @return a new instance with the same processors and the given options
      */
-    public final Compiler withOptions(Iterable<? extends Object> options) {
+    public final Compiler withOptions(Iterable<?> options) {
         return copy(
                 processors(),
-                FluentIterable.from(options).transform(toStringFunction()).toList(),
+                Util.listOf(options).stream().map(toStringFunction()).collect(Collectors.toList()),
                 classPath(),
                 annotationProcessorPath());
     }
@@ -148,7 +146,7 @@ public abstract class Compiler {
         return copy(
                 processors(),
                 options(),
-                Optional.of(ImmutableList.copyOf(classPath)),
+                Optional.of(Util.listOf(classPath)),
                 annotationProcessorPath());
     }
 
@@ -161,7 +159,7 @@ public abstract class Compiler {
                 processors(),
                 options(),
                 classPath(),
-                Optional.of(ImmutableList.copyOf(annotationProcessorPath)));
+                Optional.of(Util.listOf(annotationProcessorPath)));
     }
 
     /**
@@ -170,7 +168,7 @@ public abstract class Compiler {
      * @return the results of the compilation
      */
     public final Compilation compile(JavaFileObject... files) {
-        return compile(ImmutableList.copyOf(files));
+        return compile(Arrays.asList(files));
     }
 
     /**
@@ -195,7 +193,7 @@ public abstract class Compiler {
                                 fileManager,
                                 diagnosticCollector,
                                 options(),
-                                ImmutableSet.<String>of(),
+                                Set.of(),
                                 files);
         task.setProcessors(processors());
         boolean succeeded = task.call();
@@ -231,7 +229,7 @@ public abstract class Compiler {
      * @throws IllegalArgumentException if the given classloader had classpaths which we could not
      *     determine or use for compilation.
      */
-    private static ImmutableList<File> getClasspathFromClassloader(ClassLoader classloader) {
+    private static List<File> getClasspathFromClassloader(ClassLoader classloader) {
         ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
 
         // Concatenate search paths from all classloaders in the hierarchy 'till the system classloader.
@@ -240,10 +238,7 @@ public abstract class Compiler {
                 ;
              currentClassloader = currentClassloader.getParent()) {
             if (currentClassloader == systemClassLoader) {
-                Iterables.addAll(
-                        classpaths,
-                        Splitter.on(StandardSystemProperty.PATH_SEPARATOR.value())
-                                .split(StandardSystemProperty.JAVA_CLASS_PATH.value()));
+                Collections.addAll(classpaths, System.getProperty("java.class.path").split("[" + System.getProperty("path.separator") +  "]", -1));
                 break;
             }
             if (currentClassloader == platformClassLoader) {
@@ -273,7 +268,7 @@ public abstract class Compiler {
     }
 
     private static void setLocation(
-            InMemoryJavaFileManager fileManager, StandardLocation location, ImmutableList<File> path) {
+            InMemoryJavaFileManager fileManager, StandardLocation location, List<File> path) {
         try {
             fileManager.setLocation(location, path);
         } catch (IOException e) {
@@ -283,10 +278,10 @@ public abstract class Compiler {
     }
 
     private Compiler copy(
-            ImmutableList<Processor> processors,
-            ImmutableList<String> options,
-            Optional<ImmutableList<File>> classPath,
-            Optional<ImmutableList<File>> annotationProcessorPath) {
+            List<Processor> processors,
+            List<String> options,
+            Optional<List<File>> classPath,
+            Optional<List<File>> annotationProcessorPath) {
         return new AutoValue_Compiler(
                 javaCompiler(), processors, options, classPath, annotationProcessorPath);
     }
