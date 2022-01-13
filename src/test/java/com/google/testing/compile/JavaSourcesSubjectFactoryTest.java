@@ -15,7 +15,6 @@
  */
 package com.google.testing.compile;
 
-import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -717,7 +716,7 @@ class JavaSourcesSubjectFactoryTest {
         assertAbout(javaSource())
                 .that(HELLO_WORLD_RESOURCE)
                 .withCompilerOptions("-Aa=1")
-                .withCompilerOptions(ImmutableList.of("-Ab=2", "-Ac=3"))
+                .withCompilerOptions(List.of("-Ab=2", "-Ac=3"))
                 .processedWith(processor)
                 .compilesWithoutError();
         assertThat(processor.options).containsEntry("a", "1");

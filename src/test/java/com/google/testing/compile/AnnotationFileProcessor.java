@@ -1,7 +1,5 @@
 package com.google.testing.compile;
 
-import com.google.common.collect.ImmutableSet;
-
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -32,7 +30,7 @@ final class AnnotationFileProcessor extends AbstractProcessor {
 
     @Override
     public Set<String> getSupportedAnnotationTypes() {
-        return ImmutableSet.of("*");
+        return Set.of("*");
     }
 
     @Override

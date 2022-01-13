@@ -16,8 +16,6 @@
 
 package com.google.testing.compile;
 
-import com.google.common.collect.ImmutableSet;
-
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
@@ -32,7 +30,7 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 /**
  * Annotated elements will have a diagnostic message whose {@linkplain Kind kind} is determined by a
- * parameter on {@link DiagnosticMessageProcessor}.
+ * parameter on {@code DiagnosticMessageProcessor}.
  */
 @Retention(SOURCE)
 public @interface DiagnosticMessage {
@@ -55,7 +53,7 @@ public @interface DiagnosticMessage {
 
         @Override
         public Set<String> getSupportedAnnotationTypes() {
-            return ImmutableSet.of(DiagnosticMessage.class.getCanonicalName());
+            return Set.of(DiagnosticMessage.class.getCanonicalName());
         }
 
         @Override

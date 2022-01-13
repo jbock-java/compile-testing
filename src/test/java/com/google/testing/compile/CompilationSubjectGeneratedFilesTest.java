@@ -1,6 +1,5 @@
 package com.google.testing.compile;
 
-import com.google.common.io.ByteSource;
 import com.google.common.truth.Truth;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

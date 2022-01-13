@@ -15,8 +15,6 @@
  */
 package com.google.testing.compile;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -42,6 +40,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -68,7 +67,7 @@ public final class CompilerTest {
         JavaFileObject[] files = {HELLO_WORLD};
         javac()
                 .withOptions(options1)
-                .withOptions(ImmutableList.of("-Ab=2", "-Ac=3"))
+                .withOptions(List.of("-Ab=2", "-Ac=3"))
                 .withProcessors(processor)
                 .compile(files);
         assertThat(processor.options)
@@ -133,7 +132,7 @@ public final class CompilerTest {
     void classPath_empty() {
         Compilation compilation =
                 javac()
-                        .withClasspath(ImmutableList.of())
+                        .withClasspath(List.of())
                         .compile(
                                 JavaFileObjects.forSourceLines(
                                         "Test",
@@ -151,15 +150,15 @@ public final class CompilerTest {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         StandardJavaFileManager fileManager =
                 compiler.getStandardFileManager(/* diagnosticListener= */ null, Locale.getDefault(), UTF_8);
-        fileManager.setLocation(StandardLocation.CLASS_OUTPUT, ImmutableList.of(lib));
+        fileManager.setLocation(StandardLocation.CLASS_OUTPUT, List.of(lib));
         CompilationTask task =
                 compiler.getTask(
                         /* out= */ null,
                         fileManager,
                         /* diagnosticListener= */ null,
-                        /* options= */ ImmutableList.of(),
+                        /* options= */ List.of(),
                         /* classes= */ null,
-                        ImmutableList.of(JavaFileObjects.forSourceLines("Lib", "class Lib {}")));
+                        List.of(JavaFileObjects.forSourceLines("Lib", "class Lib {}")));
         assertThat(task.call()).isTrue();
         return lib;
     }
@@ -170,7 +169,7 @@ public final class CompilerTest {
         // compile with only 'Lib' on the classpath
         Compilation compilation =
                 javac()
-                        .withClasspath(ImmutableList.of(lib))
+                        .withClasspath(List.of(lib))
                         .withOptions("-verbose")
                         .compile(
                                 JavaFileObjects.forSourceLines(
@@ -211,7 +210,7 @@ public final class CompilerTest {
     void annotationProcessorPath_empty() {
         AnnotationFileProcessor processor = new AnnotationFileProcessor();
         Compiler compiler =
-                javac().withProcessors(processor).withAnnotationProcessorPath(ImmutableList.of());
+                javac().withProcessors(processor).withAnnotationProcessorPath(List.of());
         RuntimeException expected =
                 assertThrows(
                         RuntimeException.class,
@@ -228,7 +227,7 @@ public final class CompilerTest {
         Compilation compilation =
                 javac()
                         .withProcessors(processor)
-                        .withAnnotationProcessorPath(ImmutableList.of(jar))
+                        .withAnnotationProcessorPath(List.of(jar))
                         .compile(JavaFileObjects.forSourceLines("Test", "class Test {}"));
         assertThat(compilation).succeeded();
     }
@@ -261,8 +260,8 @@ public final class CompilerTest {
                                     }
 
                                     @Override
-                                    public ImmutableSet<String> getSupportedAnnotationTypes() {
-                                        return ImmutableSet.of("*");
+                                    public Set<String> getSupportedAnnotationTypes() {
+                                        return Set.of("*");
                                     }
 
                                     @Override
