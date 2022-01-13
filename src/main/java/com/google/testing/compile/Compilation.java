@@ -15,21 +15,19 @@
  */
 package com.google.testing.compile;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
-
 import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileManager.Location;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collector;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.testing.compile.JavaFileObjects.asBytes;
-import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 import static javax.tools.Diagnostic.Kind.ERROR;
 import static javax.tools.Diagnostic.Kind.MANDATORY_WARNING;
@@ -42,10 +40,10 @@ import static javax.tools.StandardLocation.SOURCE_OUTPUT;
 public final class Compilation {
 
     private final Compiler compiler;
-    private final ImmutableList<JavaFileObject> sourceFiles;
+    private final List<JavaFileObject> sourceFiles;
     private final Status status;
-    private final ImmutableList<Diagnostic<? extends JavaFileObject>> diagnostics;
-    private final ImmutableList<JavaFileObject> generatedFiles;
+    private final List<Diagnostic<? extends JavaFileObject>> diagnostics;
+    private final List<JavaFileObject> generatedFiles;
 
     Compilation(
             Compiler compiler,
@@ -54,10 +52,10 @@ public final class Compilation {
             Iterable<Diagnostic<? extends JavaFileObject>> diagnostics,
             Iterable<JavaFileObject> generatedFiles) {
         this.compiler = compiler;
-        this.sourceFiles = ImmutableList.copyOf(sourceFiles);
+        this.sourceFiles = Util.listOf(sourceFiles);
         this.status = successful ? Status.SUCCESS : Status.FAILURE;
-        this.diagnostics = ImmutableList.copyOf(diagnostics);
-        this.generatedFiles = ImmutableList.copyOf(generatedFiles);
+        this.diagnostics = Util.listOf(diagnostics);
+        this.generatedFiles = Util.listOf(generatedFiles);
     }
 
     /** The compiler. */
@@ -66,7 +64,7 @@ public final class Compilation {
     }
 
     /** The source files compiled. */
-    public ImmutableList<JavaFileObject> sourceFiles() {
+    public List<JavaFileObject> sourceFiles() {
         return sourceFiles;
     }
 
@@ -82,12 +80,12 @@ public final class Compilation {
      * @see #warnings()
      * @see #notes()
      */
-    public ImmutableList<Diagnostic<? extends JavaFileObject>> diagnostics() {
+    public List<Diagnostic<? extends JavaFileObject>> diagnostics() {
         return diagnostics;
     }
 
     /** {@linkplain Diagnostic.Kind#ERROR Errors} reported during compilation. */
-    public ImmutableList<Diagnostic<? extends JavaFileObject>> errors() {
+    public List<Diagnostic<? extends JavaFileObject>> errors() {
         return diagnosticsOfKind(ERROR);
     }
 
@@ -95,21 +93,22 @@ public final class Compilation {
      * {@linkplain Diagnostic.Kind#WARNING Warnings} (including {@linkplain
      * Diagnostic.Kind#MANDATORY_WARNING mandatory warnings}) reported during compilation.
      */
-    public ImmutableList<Diagnostic<? extends JavaFileObject>> warnings() {
+    public List<Diagnostic<? extends JavaFileObject>> warnings() {
         return diagnosticsOfKind(WARNING, MANDATORY_WARNING);
     }
 
     /** {@linkplain Diagnostic.Kind#NOTE Notes} reported during compilation. */
-    public ImmutableList<Diagnostic<? extends JavaFileObject>> notes() {
+    public List<Diagnostic<? extends JavaFileObject>> notes() {
         return diagnosticsOfKind(NOTE);
     }
 
-    ImmutableList<Diagnostic<? extends JavaFileObject>> diagnosticsOfKind(Kind kind, Kind... more) {
-        ImmutableSet<Kind> kinds = Sets.immutableEnumSet(kind, more);
+    List<Diagnostic<? extends JavaFileObject>> diagnosticsOfKind(Kind kind, Kind... more) {
+        Set<Kind> kinds = EnumSet.of(kind);
+        Collections.addAll(kinds, more);
         return diagnostics()
                 .stream()
                 .filter(diagnostic -> kinds.contains(diagnostic.getKind()))
-                .collect(toImmutableList());
+                .collect(Collectors.toList());
     }
 
     /**
@@ -118,8 +117,8 @@ public final class Compilation {
      * @throws IllegalStateException for {@linkplain #status() failed compilations}, since the state
      *     of the generated files is undefined in that case
      */
-    public ImmutableList<JavaFileObject> generatedFiles() {
-        checkState(
+    public List<JavaFileObject> generatedFiles() {
+        Preconditions.checkState(
                 status.equals(Status.SUCCESS),
                 "compilation failed, so generated files are unavailable. %s",
                 describeFailureDiagnostics());
@@ -132,11 +131,11 @@ public final class Compilation {
      * @throws IllegalStateException for {@linkplain #status() failed compilations}, since the state
      *     of the generated files is undefined in that case
      */
-    public ImmutableList<JavaFileObject> generatedSourceFiles() {
+    public List<JavaFileObject> generatedSourceFiles() {
         return generatedFiles()
                 .stream()
                 .filter(generatedFile -> generatedFile.getKind().equals(JavaFileObject.Kind.SOURCE))
-                .collect(toImmutableList());
+                .collect(Collectors.toList());
     }
 
     /**
@@ -221,7 +220,7 @@ public final class Compilation {
 
     /** Returns a description of the why the compilation failed. */
     String describeFailureDiagnostics() {
-        ImmutableList<Diagnostic<? extends JavaFileObject>> diagnostics = diagnostics();
+        List<Diagnostic<? extends JavaFileObject>> diagnostics = diagnostics();
         if (diagnostics.isEmpty()) {
             return "Compilation produced no diagnostics.\n";
         }
@@ -232,11 +231,11 @@ public final class Compilation {
 
     /** Returns a description of the source file generated by this compilation. */
     String describeGeneratedSourceFiles() {
-        ImmutableList<JavaFileObject> generatedSourceFiles =
+        List<JavaFileObject> generatedSourceFiles =
                 generatedFiles
                         .stream()
                         .filter(generatedFile -> generatedFile.getKind().equals(JavaFileObject.Kind.SOURCE))
-                        .collect(toImmutableList());
+                        .collect(Collectors.toList());
         if (generatedSourceFiles.isEmpty()) {
             return "No files were generated.\n";
         } else {
@@ -264,10 +263,6 @@ public final class Compilation {
             throw new IllegalStateException(
                     "Couldn't read from JavaFileObject when it was already in memory.", e);
         }
-    }
-
-    private static <T> Collector<T, ?, ImmutableList<T>> toImmutableList() {
-        return collectingAndThen(toList(), ImmutableList::copyOf);
     }
 
     /** The status of a compilation. */

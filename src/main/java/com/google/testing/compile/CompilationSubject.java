@@ -15,10 +15,6 @@
  */
 package com.google.testing.compile;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Streams;
 import com.google.common.truth.Fact;
 import com.google.common.truth.FailureMetadata;
 import com.google.common.truth.Subject;
@@ -28,18 +24,19 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaFileManager.Location;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Predicates.notNull;
-import static com.google.common.collect.Iterables.size;
 import static com.google.common.truth.Fact.fact;
 import static com.google.common.truth.Fact.simpleFact;
 import static com.google.common.truth.Truth.assertAbout;
@@ -47,7 +44,6 @@ import static com.google.testing.compile.Compilation.Status.FAILURE;
 import static com.google.testing.compile.Compilation.Status.SUCCESS;
 import static com.google.testing.compile.JavaFileObjectSubject.javaFileObjects;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static javax.tools.Diagnostic.Kind.ERROR;
@@ -164,9 +160,9 @@ public final class CompilationSubject extends Subject {
 
     private void checkDiagnosticCount(
             int expectedCount, Diagnostic.Kind kind, Diagnostic.Kind... more) {
-        Iterable<Diagnostic<? extends JavaFileObject>> diagnostics =
+        List<Diagnostic<? extends JavaFileObject>> diagnostics =
                 actual.diagnosticsOfKind(kind, more);
-        int actualCount = size(diagnostics);
+        int actualCount = diagnostics.size();
         if (actualCount != expectedCount) {
             failWithoutActual(
                     simpleFact(
@@ -268,18 +264,18 @@ public final class CompilationSubject extends Subject {
      * Returns the diagnostics that match one of the kinds and a pattern. If none match, fails the
      * test.
      */
-    private ImmutableList<Diagnostic<? extends JavaFileObject>> findMatchingDiagnostics(
+    private List<Diagnostic<? extends JavaFileObject>> findMatchingDiagnostics(
             String expectedDiagnostic,
             Pattern expectedPattern,
             Diagnostic.Kind kind,
             Diagnostic.Kind... more) {
-        ImmutableList<Diagnostic<? extends JavaFileObject>> diagnosticsOfKind =
+        List<Diagnostic<? extends JavaFileObject>> diagnosticsOfKind =
                 actual.diagnosticsOfKind(kind, more);
-        ImmutableList<Diagnostic<? extends JavaFileObject>> diagnosticsWithMessage =
+        List<Diagnostic<? extends JavaFileObject>> diagnosticsWithMessage =
                 diagnosticsOfKind
                         .stream()
                         .filter(diagnostic -> expectedPattern.matcher(diagnostic.getMessage(null)).find())
-                        .collect(toImmutableList());
+                        .collect(Collectors.toList());
         if (diagnosticsWithMessage.isEmpty()) {
             failWithoutActual(
                     simpleFact(
@@ -318,7 +314,7 @@ public final class CompilationSubject extends Subject {
             Optional<JavaFileObject> generatedFile, Location location, String path) {
         if (!generatedFile.isPresent()) {
             // TODO(b/132162475): Use Facts if it becomes public API.
-            ImmutableList.Builder<Fact> facts = ImmutableList.builder();
+            List<Fact> facts = new ArrayList<>();
             facts.add(fact("in location", location.getName()));
             facts.add(simpleFact("it generated:"));
             for (JavaFileObject generated : actual.generatedFiles()) {
@@ -327,29 +323,25 @@ public final class CompilationSubject extends Subject {
                 }
             }
             failWithoutActual(
-                    fact("expected to generate file", "/" + path), facts.build().toArray(new Fact[0]));
+                    fact("expected to generate file", "/" + path), facts.toArray(new Fact[0]));
             return ignoreCheck().about(javaFileObjects()).that(ALREADY_FAILED);
         }
         return check("generatedFile(/%s)", path).about(javaFileObjects()).that(generatedFile.get());
     }
 
-    private static <T> Collector<T, ?, ImmutableList<T>> toImmutableList() {
-        return collectingAndThen(toList(), ImmutableList::copyOf);
-    }
-
-    private static <T> Collector<T, ?, ImmutableSet<T>> toImmutableSet() {
-        return collectingAndThen(toList(), ImmutableSet::copyOf);
+    private static <T> Collector<T, ?, Set<T>> toImmutableSet() {
+        return Collectors.toCollection(LinkedHashSet::new);
     }
 
     private class DiagnosticAssertions {
         private final String expectedDiagnostic;
-        private final ImmutableList<Diagnostic<? extends JavaFileObject>> diagnostics;
+        private final List<Diagnostic<? extends JavaFileObject>> diagnostics;
 
         DiagnosticAssertions(
                 String expectedDiagnostic,
                 Iterable<Diagnostic<? extends JavaFileObject>> matchingDiagnostics) {
             this.expectedDiagnostic = expectedDiagnostic;
-            this.diagnostics = ImmutableList.copyOf(matchingDiagnostics);
+            this.diagnostics = Util.listOf(matchingDiagnostics);
         }
 
         DiagnosticAssertions(
@@ -358,9 +350,9 @@ public final class CompilationSubject extends Subject {
             this(previous.expectedDiagnostic, matchingDiagnostics);
         }
 
-        ImmutableList<Diagnostic<? extends JavaFileObject>> filterDiagnostics(
+        List<Diagnostic<? extends JavaFileObject>> filterDiagnostics(
                 Predicate<? super Diagnostic<? extends JavaFileObject>> predicate) {
-            return diagnostics.stream().filter(predicate).collect(toImmutableList());
+            return diagnostics.stream().filter(predicate).collect(Collectors.toList());
         }
 
         <T> Stream<T> mapDiagnostics(Function<? super Diagnostic<? extends JavaFileObject>, T> mapper) {
@@ -392,10 +384,10 @@ public final class CompilationSubject extends Subject {
         }
 
         /** Returns the diagnostics that are in the given file. Fails the test if none are found. */
-        private ImmutableList<Diagnostic<? extends JavaFileObject>> findDiagnosticsInFile(
+        private List<Diagnostic<? extends JavaFileObject>> findDiagnosticsInFile(
                 JavaFileObject expectedFile) {
             String expectedFilePath = expectedFile.toUri().getPath();
-            ImmutableList<Diagnostic<? extends JavaFileObject>> diagnosticsInFile =
+            List<Diagnostic<? extends JavaFileObject>> diagnosticsInFile =
                     filterDiagnostics(
                             diagnostic -> {
                                 JavaFileObject source = diagnostic.getSource();
@@ -408,13 +400,13 @@ public final class CompilationSubject extends Subject {
             return diagnosticsInFile;
         }
 
-        private ImmutableSet<String> sourceFilesWithDiagnostics() {
+        private Set<String> sourceFilesWithDiagnostics() {
             return mapDiagnostics(
                     diagnostic ->
                             diagnostic.getSource() == null
                                     ? "(no associated file)"
                                     : diagnostic.getSource().getName())
-                    .collect(toImmutableSet());
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
         }
     }
 
@@ -451,7 +443,7 @@ public final class CompilationSubject extends Subject {
             if (lineNumber == Diagnostic.NOPOS) {
                 return "(no associated line)";
             }
-            checkArgument(lineNumber > 0 && lineNumber <= linesInFile().size(),
+            Preconditions.checkArgument(lineNumber > 0 && lineNumber <= linesInFile().size(),
                     "Invalid line number %s; number of lines is only %s", lineNumber, linesInFile().size());
             return String.format("%4d: %s", lineNumber, linesInFile().get((int) (lineNumber - 1)));
         }
@@ -465,7 +457,7 @@ public final class CompilationSubject extends Subject {
         private DiagnosticOnLine(
                 DiagnosticAssertions previous,
                 JavaFileObject file,
-                ImmutableList<Diagnostic<? extends JavaFileObject>> diagnosticsInFile) {
+                List<Diagnostic<? extends JavaFileObject>> diagnosticsInFile) {
             super(previous, diagnosticsInFile);
             this.linesInFile = new LinesInFile(file);
         }
@@ -492,25 +484,23 @@ public final class CompilationSubject extends Subject {
          */
         private long findLineContainingSubstring(String expectedLineSubstring) {
             // The explicit type arguments below are needed by our nullness checker.
-            ImmutableSet<Long> matchingLines =
-                    Streams.<String, Long>mapWithIndex(
-                                    linesInFile.linesInFile().stream(),
-                                    (line, index) -> line.contains(expectedLineSubstring) ? index : null)
-                            .filter(notNull())
-                            .map(index -> index + 1) // to 1-based line numbers
-                            .collect(toImmutableSet());
-            checkArgument(
+            Set<Long> matchingLines =
+                    IntStream.range(0, linesInFile.linesInFile().size())
+                            .filter(index -> linesInFile.linesInFile().get(index).contains(expectedLineSubstring))
+                            .mapToObj(index -> index + 1L) // to 1-based line numbers
+                            .collect(Collectors.toCollection(LinkedHashSet::new));
+            Preconditions.checkArgument(
                     !matchingLines.isEmpty(),
                     "No line in %s contained \"%s\"",
                     linesInFile.fileName(),
                     expectedLineSubstring);
-            checkArgument(
+            Preconditions.checkArgument(
                     matchingLines.size() == 1,
                     "More than one line in %s contained \"%s\":\n%s",
                     linesInFile.fileName(),
                     expectedLineSubstring,
                     matchingLines.stream().collect(linesInFile.toLineList()));
-            return Iterables.getOnlyElement(matchingLines);
+            return Util.getOnlyElement(matchingLines);
         }
 
         /**
@@ -519,9 +509,9 @@ public final class CompilationSubject extends Subject {
          *
          * @param expectedLine the expected line number
          */
-        private ImmutableList<Diagnostic<? extends JavaFileObject>> findMatchingDiagnosticsOnLine(
+        private List<Diagnostic<? extends JavaFileObject>> findMatchingDiagnosticsOnLine(
                 long expectedLine) {
-            ImmutableList<Diagnostic<? extends JavaFileObject>> diagnosticsOnLine =
+            List<Diagnostic<? extends JavaFileObject>> diagnosticsOnLine =
                     filterDiagnostics(diagnostic -> diagnostic.getLineNumber() == expectedLine);
             if (diagnosticsOnLine.isEmpty()) {
                 failExpectingMatchingDiagnostic(
@@ -544,7 +534,7 @@ public final class CompilationSubject extends Subject {
                 DiagnosticAssertions previous,
                 LinesInFile linesInFile,
                 long line,
-                ImmutableList<Diagnostic<? extends JavaFileObject>> diagnosticsOnLine) {
+                List<Diagnostic<? extends JavaFileObject>> diagnosticsOnLine) {
             super(previous, diagnosticsOnLine);
             this.linesInFile = linesInFile;
             this.line = line;
@@ -564,13 +554,13 @@ public final class CompilationSubject extends Subject {
             }
         }
 
-        private ImmutableSet<String> columnsWithDiagnostics() {
+        private Set<String> columnsWithDiagnostics() {
             return mapDiagnostics(
                     diagnostic ->
                             diagnostic.getColumnNumber() == Diagnostic.NOPOS
                                     ? "(no associated position)"
                                     : Long.toString(diagnostic.getColumnNumber()))
-                    .collect(toImmutableSet());
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
         }
     }
 }
