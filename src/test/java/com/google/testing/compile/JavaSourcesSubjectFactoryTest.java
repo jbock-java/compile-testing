@@ -16,7 +16,6 @@
 package com.google.testing.compile;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.io.ByteSource;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -666,7 +665,7 @@ class JavaSourcesSubjectFactoryTest {
                 .compilesWithoutError()
                 .and()
                 .generatesFileNamed(CLASS_OUTPUT, "com.google.testing.compile", "Foo")
-                .withContents(ByteSource.wrap("Bar".getBytes(UTF_8)));
+                .withContents("Bar".getBytes(UTF_8));
     }
 
     @Test
@@ -679,7 +678,7 @@ class JavaSourcesSubjectFactoryTest {
                         .compilesWithoutError()
                         .and()
                         .generatesFileNamed(CLASS_OUTPUT, "com.google.testing.compile", "Bogus")
-                        .withContents(ByteSource.wrap("Bar".getBytes(UTF_8))));
+                        .withContents("Bar".getBytes(UTF_8)));
         assertThat(expected)
                 .factValue("expected to generate file")
                 .isEqualTo("/com/google/testing/compile/Bogus");
@@ -696,7 +695,7 @@ class JavaSourcesSubjectFactoryTest {
                         .compilesWithoutError()
                         .and()
                         .generatesFileNamed(CLASS_OUTPUT, "com.google.testing.compile", "Foo")
-                        .withContents(ByteSource.wrap("Bogus".getBytes(UTF_8))));
+                        .withContents("Bogus".getBytes(UTF_8)));
         assertThat(expected.getMessage()).contains("Foo");
         assertThat(expected.getMessage()).contains(" have contents");
     }

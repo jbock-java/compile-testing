@@ -66,7 +66,7 @@ final class JavaFileObjectSubjectTest {
 
     @Test
     void hasContents() {
-        assertThat(CLASS_WITH_FIELD).hasContents(JavaFileObjects.asByteSource(CLASS_WITH_FIELD));
+        assertThat(CLASS_WITH_FIELD).hasContents(CLASS_WITH_FIELD);
     }
 
     @Test
@@ -75,7 +75,7 @@ final class JavaFileObjectSubjectTest {
                 AssertionError.class,
                 () -> assertAbout(javaFileObjects())
                         .that(CLASS_WITH_FIELD)
-                        .hasContents(JavaFileObjects.asByteSource(DIFFERENT_NAME)));
+                        .hasContents(DIFFERENT_NAME));
         assertThat(expected.getMessage()).contains(CLASS_WITH_FIELD.getName());
     }
 

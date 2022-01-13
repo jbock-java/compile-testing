@@ -15,21 +15,23 @@
  */
 package com.google.testing.compile;
 
-import static com.google.common.truth.Fact.fact;
-import static com.google.common.truth.Truth.assertAbout;
-import static com.google.testing.compile.JavaFileObjects.asByteSource;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
-import com.google.common.io.ByteSource;
 import com.google.common.truth.FailureMetadata;
 import com.google.common.truth.IterableSubject;
 import com.google.common.truth.StringSubject;
 import com.google.common.truth.Subject;
+
+import javax.tools.JavaFileObject;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
-import javax.tools.JavaFileObject;
+
+import static com.google.common.truth.Fact.fact;
+import static com.google.common.truth.Truth.assertAbout;
+import static com.google.testing.compile.JavaFileObjects.asByteSource;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /** Assertions about {@link JavaFileObject}s. */
 public final class JavaFileObjectSubject extends Subject {
@@ -81,14 +83,30 @@ public final class JavaFileObjectSubject extends Subject {
     }
 
     /** Asserts that the actual file's contents are equal to {@code expected}. */
-    public void hasContents(ByteSource expected) {
-        try {
-            if (!asByteSource(actual).contentEquals(expected)) {
-                failWithActual("expected to have contents", expected);
+    public void hasContents(byte[] expected) {
+        byte[] actualBytes = getBytes(actual);
+        if (!Arrays.equals(actualBytes, expected)) {
+            failWithActual("expected to have contents", expected);
+        }
+    }
+
+    public void hasContents(JavaFileObject javaFileObject) {
+        hasContents(getBytes(javaFileObject));
+    }
+
+    private static byte[] getBytes(JavaFileObject javaFileObject) {
+        try (InputStream is = javaFileObject.openInputStream()) {
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            int nRead;
+            byte[] data = new byte[16384];
+            while ((nRead = is.read(data, 0, data.length)) != -1) {
+                buffer.write(data, 0, nRead);
             }
+            return buffer.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
     }
 
     /**

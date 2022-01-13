@@ -362,7 +362,7 @@ public final class JavaSourcesSubject extends Subject
                 }
 
                 @Override
-                public SuccessfulFileClause<T> withContents(ByteSource expectedByteSource) {
+                public SuccessfulFileClause<T> withContents(byte[] expectedByteSource) {
                     javaFileObjectSubject.hasContents(expectedByteSource);
                     return this;
                 }

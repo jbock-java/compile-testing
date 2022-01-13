@@ -30,7 +30,7 @@ class CompilationSubjectGeneratedFilesTest {
     void generatedFilePath() {
         CompilationSubject.assertThat(CompilationSubjectTests.compilerWithGenerator().compile(CompilationSubjectTests.HELLO_WORLD_RESOURCE))
                 .generatedFile(CLASS_OUTPUT, "com/google/testing/compile/Foo")
-                .hasContents(ByteSource.wrap("Bar".getBytes(UTF_8)));
+                .hasContents("Bar".getBytes(UTF_8));
     }
 
     @Test
@@ -49,7 +49,7 @@ class CompilationSubjectGeneratedFilesTest {
     void generatedFilePackageFile() {
         CompilationSubject.assertThat(CompilationSubjectTests.compilerWithGenerator().compile(CompilationSubjectTests.HELLO_WORLD_RESOURCE))
                 .generatedFile(CLASS_OUTPUT, "com.google.testing.compile", "Foo")
-                .hasContents(ByteSource.wrap("Bar".getBytes(UTF_8)));
+                .hasContents("Bar".getBytes(UTF_8));
     }
 
     @Test

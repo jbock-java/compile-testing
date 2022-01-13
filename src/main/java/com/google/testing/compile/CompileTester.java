@@ -15,8 +15,6 @@
  */
 package com.google.testing.compile;
 
-import com.google.common.io.ByteSource;
-
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
@@ -160,12 +158,12 @@ public interface CompileTester {
     /**
      * The clause in the fluent API that checks that a generated file has the specified contents.
      */
-    public interface SuccessfulFileClause<T> extends ChainingClause<GeneratedPredicateClause<T>> {
+    interface SuccessfulFileClause<T> extends ChainingClause<GeneratedPredicateClause<T>> {
         /**
          * Checks that the contents of the generated file match the contents of the specified
-         * {@link ByteSource}.
+         * bytes.
          */
-        SuccessfulFileClause<T> withContents(ByteSource expectedByteSource);
+        SuccessfulFileClause<T> withContents(byte[] expectedByteSource);
 
         /**
          * Checks that the contents of the generated file are equal to the specified string in the given
