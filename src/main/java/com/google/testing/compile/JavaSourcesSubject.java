@@ -15,10 +15,6 @@
  */
 package com.google.testing.compile;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.common.truth.FailureMetadata;
 import com.google.common.truth.Subject;
 import com.google.testing.compile.CompilationSubject.DiagnosticAtColumn;
@@ -33,7 +29,11 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.google.common.truth.Fact.simpleFact;
 import static com.google.common.truth.Truth.assertAbout;
@@ -53,7 +53,7 @@ public final class JavaSourcesSubject extends Subject
     private final Iterable<? extends JavaFileObject> actual;
     private final List<String> options = new ArrayList<>(Arrays.asList("-Xlint"));
     private ClassLoader classLoader;
-    private ImmutableList<File> classPath;
+    private List<File> classPath;
 
     JavaSourcesSubject(FailureMetadata failureMetadata, Iterable<? extends JavaFileObject> subject) {
         super(failureMetadata, subject);
@@ -62,7 +62,7 @@ public final class JavaSourcesSubject extends Subject
 
     @Override
     public JavaSourcesSubject withCompilerOptions(Iterable<String> options) {
-        Iterables.addAll(this.options, options);
+        options.forEach(this.options::add);
         return this;
     }
 
@@ -86,7 +86,7 @@ public final class JavaSourcesSubject extends Subject
 
     @Override
     public JavaSourcesSubject withClasspath(Iterable<File> classPath) {
-        this.classPath = ImmutableList.copyOf(classPath);
+        this.classPath = Util.listOf(classPath);
         return this;
     }
 
@@ -117,14 +117,14 @@ public final class JavaSourcesSubject extends Subject
 
     /** The clause in the fluent API for testing compilations. */
     private final class CompilationClause implements CompileTester {
-        private final ImmutableSet<Processor> processors;
+        private final Set<Processor> processors;
 
         private CompilationClause() {
-            this(ImmutableSet.of());
+            this(Set.of());
         }
 
         private CompilationClause(Iterable<? extends Processor> processors) {
-            this.processors = ImmutableSet.copyOf(processors);
+            this.processors = Util.setOf(processors);
         }
 
         @Override
@@ -322,7 +322,7 @@ public final class JavaSourcesSubject extends Subject
 
         @Override
         public T generatesFiles(JavaFileObject first, JavaFileObject... rest) {
-            for (JavaFileObject expected : Lists.asList(first, rest)) {
+            for (JavaFileObject expected : Stream.concat(Stream.of(first), Arrays.stream(rest)).collect(Collectors.toList())) {
                 if (!wasGenerated(expected)) {
                     failWithoutActual(
                             simpleFact("Did not find a generated file corresponding to " + expected.getName()));
@@ -404,17 +404,16 @@ public final class JavaSourcesSubject extends Subject
     }
 
     public static JavaSourcesSubject assertThat(JavaFileObject javaFileObject) {
-        return assertAbout(javaSources()).that(ImmutableList.of(javaFileObject));
+        return assertAbout(javaSources()).that(List.of(javaFileObject));
     }
 
     public static JavaSourcesSubject assertThat(
             JavaFileObject javaFileObject, JavaFileObject... javaFileObjects) {
+        ArrayList<JavaFileObject> objects = new ArrayList<>();
+        objects.add(javaFileObject);
+        Collections.addAll(objects, javaFileObjects);
         return assertAbout(javaSources())
-                .that(
-                        ImmutableList.<JavaFileObject>builder()
-                                .add(javaFileObject)
-                                .add(javaFileObjects)
-                                .build());
+                .that(objects);
     }
 
     public static final class SingleSourceAdapter extends Subject
@@ -432,7 +431,7 @@ public final class JavaSourcesSubject extends Subject
              * We could take that on, or we could wait for JavaSourcesSubject to go away entirely in favor
              * of CompilationSubject.
              */
-            this.delegate = check("delegate()").about(javaSources()).that(ImmutableList.of(subject));
+            this.delegate = check("delegate()").about(javaSources()).that(List.of(subject));
         }
 
         @Override
