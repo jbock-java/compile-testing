@@ -15,8 +15,6 @@
  */
 package com.google.testing.compile;
 
-import com.google.common.base.Splitter;
-
 import javax.tools.ForwardingJavaFileObject;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
@@ -39,7 +37,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static java.util.Objects.requireNonNull;
 import static javax.tools.JavaFileObject.Kind.SOURCE;
 
 /**
@@ -60,13 +58,13 @@ public final class JavaFileObjects {
      * source and compilation errors may result if they do not match.
      */
     public static JavaFileObject forSourceString(String fullyQualifiedName, String source) {
-        Preconditions.checkNotNull(fullyQualifiedName);
+        requireNonNull(fullyQualifiedName);
         if (fullyQualifiedName.startsWith("package ")) {
             throw new IllegalArgumentException(
                     String.format("fullyQualifiedName starts with \"package\" (%s). Did you forget to "
                             + "specify the name and specify just the source text?", fullyQualifiedName));
         }
-        return new StringSourceJavaFileObject(fullyQualifiedName, Preconditions.checkNotNull(source));
+        return new StringSourceJavaFileObject(fullyQualifiedName, requireNonNull(source));
     }
 
     /**
@@ -207,14 +205,12 @@ public final class JavaFileObjects {
             super(new ResourceSourceJavaFileObject(jarUrl, getPathUri(jarUrl)));
         }
 
-        static final Splitter JAR_URL_SPLITTER = Splitter.on('!');
-
         static URI getPathUri(URL jarUrl) {
-            List<String> parts = Util.listOf(JAR_URL_SPLITTER.split(jarUrl.getPath()));
-            checkArgument(parts.size() == 2,
+            List<String> parts = Arrays.asList(jarUrl.getPath().split("[!]", -1));
+            Preconditions.checkArgument(parts.size() == 2,
                     "The jar url separator (!) appeared more than once in the url: %s", jarUrl);
             String pathPart = parts.get(1);
-            checkArgument(!pathPart.endsWith("/"), "cannot create a java file object for a directory: %s",
+            Preconditions.checkArgument(!pathPart.endsWith("/"), "cannot create a java file object for a directory: %s",
                     pathPart);
             return URI.create(pathPart);
         }

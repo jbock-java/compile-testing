@@ -41,8 +41,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.StringJoiner;
 
-import static com.google.common.collect.MoreCollectors.toOptional;
-
 /**
  * A file manager implementation that stores all output in memory.
  *
@@ -122,7 +120,7 @@ final class InMemoryJavaFileManager extends ForwardingStandardJavaFileManager {
         return inMemoryInputs.entrySet().stream()
                 .filter(entry -> entry.getKey().getPath().endsWith(suffix))
                 .map(Map.Entry::getValue)
-                .collect(toOptional()); // Might have problems if more than one input file matches.
+                .findFirst(); // Might have problems if more than one input file matches.
     }
 
     @Override

@@ -15,7 +15,6 @@
  */
 package com.google.testing.compile;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
@@ -50,7 +49,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import static com.google.testing.compile.Compilation.Status.SUCCESS;
-import static com.google.testing.compile.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -78,9 +76,7 @@ public class CompilationExtension implements BeforeAllCallback, BeforeEachCallba
     private static final ExtensionContext.Namespace NAMESPACE =
             ExtensionContext.Namespace.create(CompilationExtension.class);
 
-    private static final Executor DEFAULT_COMPILER_EXECUTOR = Executors.newCachedThreadPool(
-            new ThreadFactoryBuilder().setDaemon(true).setNameFormat("async-compiler-%d").build()
-    );
+    private static final Executor DEFAULT_COMPILER_EXECUTOR = Executors.newCachedThreadPool();
 
     private static final Map<Class<?>, Function<ProcessingEnvironment, ?>> SUPPORTED_PARAMETERS = Map.of(
             Elements.class, ProcessingEnvironment::getElementUtils,
@@ -127,7 +123,7 @@ public class CompilationExtension implements BeforeAllCallback, BeforeEachCallba
                 CompilerState.class
         );
 
-        checkState(state.prepareForTests(), state);
+        Preconditions.checkState(state.prepareForTests(), state);
     }
 
     @Override
@@ -138,7 +134,7 @@ public class CompilationExtension implements BeforeAllCallback, BeforeEachCallba
                 CompilerState.class
         );
 
-        checkState(state.prepareForTests(), state);
+        Preconditions.checkState(state.prepareForTests(), state);
     }
 
     @Override
@@ -147,7 +143,7 @@ public class CompilationExtension implements BeforeAllCallback, BeforeEachCallba
                 .get(CompilerState.class, CompilerState.class));
 
         state.terminateIfLifecycle(TestInstance.Lifecycle.PER_METHOD).ifPresent(compilation ->
-                checkState(compilation.status().equals(SUCCESS), compilation)
+                Preconditions.checkState(compilation.status().equals(SUCCESS), compilation)
         );
     }
 
@@ -161,7 +157,7 @@ public class CompilationExtension implements BeforeAllCallback, BeforeEachCallba
         final Compilation compilation = state.terminateIfLifecycle(TestInstance.Lifecycle.PER_CLASS)
                 .orElseGet(() -> fail("Mismatched beforeAll/afterAll lifecycle"));
 
-        checkState(compilation.status().equals(SUCCESS), compilation);
+        Preconditions.checkState(compilation.status().equals(SUCCESS), compilation);
     }
 
     @Override
@@ -183,7 +179,7 @@ public class CompilationExtension implements BeforeAllCallback, BeforeEachCallba
                 CompilerState.class
         );
 
-        checkState(state != null, "CompilerState not initialized");
+        Preconditions.checkState(state != null, "CompilerState not initialized");
 
         return SUPPORTED_PARAMETERS.getOrDefault(
                 parameterContext.getParameter().getType(),
@@ -254,14 +250,14 @@ public class CompilationExtension implements BeforeAllCallback, BeforeEachCallba
 
         Compilation allowTermination() throws InterruptedException, ExecutionException {
             if (this.syncBarrier.getPhase() == 1) {
-                checkState(this.syncBarrier.arriveAndDeregister() == 1, this);
+                Preconditions.checkState(this.syncBarrier.arriveAndDeregister() == 1, this);
             } else if (!this.syncBarrier.isTerminated()) {
                 throw new IllegalStateException(this.toString());
             }
 
             try {
                 final Compilation result = this.result.get(1, TimeUnit.SECONDS);
-                checkState(this.syncBarrier.isTerminated(), this);
+                Preconditions.checkState(this.syncBarrier.isTerminated(), this);
                 return result;
             } catch (TimeoutException e) {
                 // This really should never happen, since the 'syncBarrier' is the only thing the
@@ -340,7 +336,7 @@ public class CompilationExtension implements BeforeAllCallback, BeforeEachCallba
             super.init(processingEnvironment);
 
             // Share the processing environment
-            checkState(
+            Preconditions.checkState(
                     sharedState.compareAndSet(null, processingEnvironment),
                     "Shared ProcessingEnvironment was already initialized"
             );

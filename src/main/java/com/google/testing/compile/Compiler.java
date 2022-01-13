@@ -16,7 +16,6 @@
 package com.google.testing.compile;
 
 import com.google.auto.value.AutoValue;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.testing.compile.Compilation.Status;
 
 import javax.annotation.processing.Processor;
@@ -35,12 +34,11 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.google.common.base.Functions.toStringFunction;
-import static com.google.common.collect.ImmutableList.toImmutableList;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static javax.tools.ToolProvider.getSystemJavaCompiler;
 
@@ -117,7 +115,7 @@ public abstract class Compiler {
     public final Compiler withOptions(Iterable<?> options) {
         return copy(
                 processors(),
-                Util.listOf(options).stream().map(toStringFunction()).collect(Collectors.toList()),
+                Util.listOf(options).stream().map(Objects::toString).collect(Collectors.toList()),
                 classPath(),
                 annotationProcessorPath());
     }
@@ -210,7 +208,7 @@ public abstract class Compiler {
         return compilation;
     }
 
-    @VisibleForTesting
+    // visible for testing
     static final ClassLoader platformClassLoader = getPlatformClassLoader();
 
     private static ClassLoader getPlatformClassLoader() {
@@ -264,7 +262,7 @@ public abstract class Compiler {
             }
         }
 
-        return classpaths.stream().map(File::new).collect(toImmutableList());
+        return classpaths.stream().map(File::new).collect(Collectors.toList());
     }
 
     private static void setLocation(

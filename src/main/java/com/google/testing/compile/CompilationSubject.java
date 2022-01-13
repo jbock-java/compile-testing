@@ -444,7 +444,7 @@ public final class CompilationSubject extends Subject {
                 return "(no associated line)";
             }
             Preconditions.checkArgument(lineNumber > 0 && lineNumber <= linesInFile().size(),
-                    "Invalid line number %s; number of lines is only %s", lineNumber, linesInFile().size());
+                    "Invalid line number %d; number of lines is only %d", lineNumber, linesInFile().size());
             return String.format("%4d: %s", lineNumber, linesInFile().get((int) (lineNumber - 1)));
         }
     }
