@@ -15,14 +15,27 @@
  */
 package com.google.testing.compile;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
-import static com.google.testing.compile.Compilation.Status.SUCCESS;
-import static org.junit.jupiter.api.Assertions.fail;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.Extension;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.ParameterContext;
+import org.junit.jupiter.api.extension.ParameterResolutionException;
+import org.junit.jupiter.api.extension.ParameterResolver;
+
+import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
+import javax.tools.JavaFileObject;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -35,25 +48,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
-import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.RoundEnvironment;
-import javax.lang.model.SourceVersion;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
-import javax.tools.JavaFileObject;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.extension.AfterAllCallback;
-import org.junit.jupiter.api.extension.AfterEachCallback;
-import org.junit.jupiter.api.extension.BeforeAllCallback;
-import org.junit.jupiter.api.extension.BeforeEachCallback;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.extension.Extension;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.ParameterContext;
-import org.junit.jupiter.api.extension.ParameterResolutionException;
-import org.junit.jupiter.api.extension.ParameterResolver;
+
+import static com.google.testing.compile.Compilation.Status.SUCCESS;
+import static com.google.testing.compile.Preconditions.checkState;
+import static java.util.Objects.requireNonNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * A Junit 5 {@link Extension} that extends a test suite such that an instance of {@link Elements}
@@ -83,14 +82,9 @@ public class CompilationExtension implements BeforeAllCallback, BeforeEachCallba
             new ThreadFactoryBuilder().setDaemon(true).setNameFormat("async-compiler-%d").build()
     );
 
-    private static final Map<Class<?>, Function<ProcessingEnvironment, ?>> SUPPORTED_PARAMETERS;
-
-    static {
-        SUPPORTED_PARAMETERS = ImmutableMap.<Class<?>, Function<ProcessingEnvironment, ?>>builder()
-                .put(Elements.class, ProcessingEnvironment::getElementUtils)
-                .put(Types.class, ProcessingEnvironment::getTypeUtils)
-                .build();
-    }
+    private static final Map<Class<?>, Function<ProcessingEnvironment, ?>> SUPPORTED_PARAMETERS = Map.of(
+            Elements.class, ProcessingEnvironment::getElementUtils,
+            Types.class, ProcessingEnvironment::getTypeUtils);
 
     private final Executor compilerExecutor;
 
@@ -149,10 +143,8 @@ public class CompilationExtension implements BeforeAllCallback, BeforeEachCallba
 
     @Override
     public void afterEach(ExtensionContext context) throws Exception {
-        final CompilerState state = checkNotNull(context.getStore(NAMESPACE).get(
-                CompilerState.class,
-                CompilerState.class
-        ));
+        CompilerState state = requireNonNull(context.getStore(NAMESPACE)
+                .get(CompilerState.class, CompilerState.class));
 
         state.terminateIfLifecycle(TestInstance.Lifecycle.PER_METHOD).ifPresent(compilation ->
                 checkState(compilation.status().equals(SUCCESS), compilation)
@@ -161,7 +153,7 @@ public class CompilationExtension implements BeforeAllCallback, BeforeEachCallba
 
     @Override
     public void afterAll(ExtensionContext context) throws ExecutionException, InterruptedException {
-        final CompilerState state = checkNotNull(context.getStore(NAMESPACE).get(
+        final CompilerState state = requireNonNull(context.getStore(NAMESPACE).get(
                 CompilerState.class,
                 CompilerState.class
         ));
@@ -340,7 +332,7 @@ public class CompilationExtension implements BeforeAllCallback, BeforeEachCallba
 
         @Override
         public Set<String> getSupportedAnnotationTypes() {
-            return ImmutableSet.of("*");
+            return Set.of("*");
         }
 
         @Override

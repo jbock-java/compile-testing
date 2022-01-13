@@ -23,4 +23,11 @@ class Util {
         }
         return Collections.unmodifiableSet(result);
     }
+
+    static <E> Set<E> union(Set<E> set1, Set<E> set2) {
+        Set<E> result = new LinkedHashSet<>(Math.max(4, (int) (1.5 * (set1.size() + set2.size()))));
+        result.addAll(set1);
+        result.addAll(set2);
+        return result;
+    }
 }
