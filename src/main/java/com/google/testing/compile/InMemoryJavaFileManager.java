@@ -15,12 +15,9 @@
  */
 package com.google.testing.compile;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.collect.ImmutableList;
-import com.google.common.io.ByteSource;
 
 import javax.tools.FileObject;
 import javax.tools.JavaFileObject;
@@ -28,19 +25,24 @@ import javax.tools.JavaFileObject.Kind;
 import javax.tools.SimpleJavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.StandardLocation;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.StringJoiner;
 
 import static com.google.common.collect.MoreCollectors.toOptional;
 
@@ -148,19 +150,19 @@ final class InMemoryJavaFileManager extends ForwardingStandardJavaFileManager {
         return inMemoryOutputs.getUnchecked(uri);
     }
 
-    ImmutableList<JavaFileObject> getGeneratedSources() {
-        ImmutableList.Builder<JavaFileObject> result = ImmutableList.builder();
+    List<JavaFileObject> getGeneratedSources() {
+        List<JavaFileObject> result = new ArrayList<>();
         for (Map.Entry<URI, JavaFileObject> entry : inMemoryOutputs.asMap().entrySet()) {
             if (entry.getKey().getPath().startsWith("/" + StandardLocation.SOURCE_OUTPUT.name())
                     && (entry.getValue().getKind() == Kind.SOURCE)) {
                 result.add(entry.getValue());
             }
         }
-        return result.build();
+        return result;
     }
 
-    ImmutableList<JavaFileObject> getOutputFiles() {
-        return ImmutableList.copyOf(inMemoryOutputs.asMap().values());
+    List<JavaFileObject> getOutputFiles() {
+        return List.copyOf(inMemoryOutputs.asMap().values());
     }
 
     /** Adds files that should be available in the source path. */
@@ -173,7 +175,7 @@ final class InMemoryJavaFileManager extends ForwardingStandardJavaFileManager {
     private static final class InMemoryJavaFileObject extends SimpleJavaFileObject
             implements JavaFileObject {
         private long lastModified = 0L;
-        private Optional<ByteSource> data = Optional.empty();
+        private Optional<byte[]> data = Optional.empty();
 
         InMemoryJavaFileObject(URI uri) {
             super(uri, JavaFileObjects.deduceKind(uri));
@@ -182,7 +184,7 @@ final class InMemoryJavaFileManager extends ForwardingStandardJavaFileManager {
         @Override
         public InputStream openInputStream() throws IOException {
             if (data.isPresent()) {
-                return data.get().openStream();
+                return new ByteArrayInputStream(data.get());
             } else {
                 throw new FileNotFoundException();
             }
@@ -194,7 +196,7 @@ final class InMemoryJavaFileManager extends ForwardingStandardJavaFileManager {
                 @Override
                 public void close() throws IOException {
                     super.close();
-                    data = Optional.of(ByteSource.wrap(toByteArray()));
+                    data = Optional.of(toByteArray());
                     lastModified = System.currentTimeMillis();
                 }
             };
@@ -203,7 +205,7 @@ final class InMemoryJavaFileManager extends ForwardingStandardJavaFileManager {
         @Override
         public Reader openReader(boolean ignoreEncodingErrors) throws IOException {
             if (data.isPresent()) {
-                return data.get().asCharSource(Charset.defaultCharset()).openStream();
+                return new StringReader(new String(data.get(), Charset.defaultCharset()));
             } else {
                 throw new FileNotFoundException();
             }
@@ -213,7 +215,7 @@ final class InMemoryJavaFileManager extends ForwardingStandardJavaFileManager {
         public CharSequence getCharContent(boolean ignoreEncodingErrors)
                 throws IOException {
             if (data.isPresent()) {
-                return data.get().asCharSource(Charset.defaultCharset()).read();
+                return new String(data.get(), Charset.defaultCharset());
             } else {
                 throw new FileNotFoundException();
             }
@@ -226,7 +228,7 @@ final class InMemoryJavaFileManager extends ForwardingStandardJavaFileManager {
                 public void close() throws IOException {
                     super.close();
                     data =
-                            Optional.of(ByteSource.wrap(toString().getBytes(Charset.defaultCharset())));
+                            Optional.of(toString().getBytes(Charset.defaultCharset()));
                     lastModified = System.currentTimeMillis();
                 }
             };
@@ -246,9 +248,9 @@ final class InMemoryJavaFileManager extends ForwardingStandardJavaFileManager {
 
         @Override
         public String toString() {
-            return MoreObjects.toStringHelper(this)
-                    .add("uri", toUri())
-                    .add("kind", kind)
+            return new StringJoiner(", ", InMemoryJavaFileObject.class.getSimpleName() + "[", "]")
+                    .add("uri=" + toUri())
+                    .add("kind=" + kind)
                     .toString();
         }
     }
