@@ -28,7 +28,7 @@ import java.util.Optional;
 import java.util.stream.Collector;
 
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.testing.compile.JavaFileObjects.asByteSource;
+import static com.google.testing.compile.JavaFileObjects.asBytes;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 import static javax.tools.Diagnostic.Kind.ERROR;
@@ -255,7 +255,7 @@ public final class Compilation {
             if (generatedFile.getKind().equals(CLASS)) {
                 entry.append(
                         String.format(
-                                "  [generated class file (%d bytes)]", asByteSource(generatedFile).size()));
+                                "  [generated class file (%d bytes)]", asBytes(generatedFile).length));
             } else {
                 entry.append(generatedFile.getCharContent(true));
             }

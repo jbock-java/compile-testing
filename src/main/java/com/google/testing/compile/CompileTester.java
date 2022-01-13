@@ -119,7 +119,7 @@ public interface CompileTester {
          *
          * <p>Implementations are likely to throw {@link UnsupportedOperationException}.
          *
-         * @deprecated use {@code hasExactContents} or {@code containsLines} instead
+         * @deprecated use {@link #containsLines} instead
          */
         @Deprecated(forRemoval = true)
         T generatesSources(JavaFileObject first, JavaFileObject... rest);

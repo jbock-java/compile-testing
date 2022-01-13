@@ -16,16 +16,16 @@
 package com.google.testing.compile;
 
 import com.google.common.base.Splitter;
-import com.google.common.io.ByteSource;
-import com.google.common.io.Resources;
 
 import javax.tools.ForwardingJavaFileObject;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
 import javax.tools.SimpleJavaFileObject;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
@@ -35,6 +35,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -174,13 +175,28 @@ public final class JavaFileObjects {
         return Kind.OTHER;
     }
 
-    static ByteSource asByteSource(final JavaFileObject javaFileObject) {
-        return new ByteSource() {
-            @Override
-            public InputStream openStream() throws IOException {
+    static byte[] asBytes(JavaFileObject javaFileObject) {
+        return asBytes(() -> {
+            try {
                 return javaFileObject.openInputStream();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-        };
+        });
+    }
+
+    private static byte[] asBytes(Supplier<InputStream> supplier) {
+        try (InputStream is = supplier.get()) {
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            int nRead;
+            byte[] data = new byte[16384];
+            while ((nRead = is.read(data, 0, data.length)) != -1) {
+                buffer.write(data, 0, nRead);
+            }
+            return buffer.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static final class JarFileJavaFileObject
@@ -193,7 +209,7 @@ public final class JavaFileObjects {
 
         static final Splitter JAR_URL_SPLITTER = Splitter.on('!');
 
-        static final URI getPathUri(URL jarUrl) {
+        static URI getPathUri(URL jarUrl) {
             List<String> parts = Util.listOf(JAR_URL_SPLITTER.split(jarUrl.getPath()));
             checkArgument(parts.size() == 2,
                     "The jar url separator (!) appeared more than once in the url: %s", jarUrl);
@@ -205,12 +221,18 @@ public final class JavaFileObjects {
     }
 
     private static final class ResourceSourceJavaFileObject extends SimpleJavaFileObject {
-        final ByteSource resourceByteSource;
+        final byte[] resourceByteSource;
 
         /** Only to avoid creating the URI twice. */
         ResourceSourceJavaFileObject(URL resourceUrl, URI resourceUri) {
             super(resourceUri, deduceKind(resourceUri));
-            this.resourceByteSource = Resources.asByteSource(resourceUrl);
+            this.resourceByteSource = asBytes(() -> {
+                try {
+                    return resourceUrl.openStream();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
         }
 
         ResourceSourceJavaFileObject(URL resourceUrl) {
@@ -218,19 +240,18 @@ public final class JavaFileObjects {
         }
 
         @Override
-        public CharSequence getCharContent(boolean ignoreEncodingErrors)
-                throws IOException {
-            return resourceByteSource.asCharSource(Charset.defaultCharset()).read();
+        public CharSequence getCharContent(boolean ignoreEncodingErrors) {
+            return new String(resourceByteSource, Charset.defaultCharset());
         }
 
         @Override
-        public InputStream openInputStream() throws IOException {
-            return resourceByteSource.openStream();
+        public InputStream openInputStream() {
+            return new ByteArrayInputStream(resourceByteSource);
         }
 
         @Override
-        public Reader openReader(boolean ignoreEncodingErrors) throws IOException {
-            return resourceByteSource.asCharSource(Charset.defaultCharset()).openStream();
+        public Reader openReader(boolean ignoreEncodingErrors) {
+            return new InputStreamReader(new ByteArrayInputStream(resourceByteSource));
         }
     }
 }

@@ -28,8 +28,7 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaFileManager.Location;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
-import java.io.IOException;
-import java.io.UncheckedIOException;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -422,7 +421,7 @@ public final class CompilationSubject extends Subject {
     /** An object that can list the lines in a file. */
     static final class LinesInFile {
         private final JavaFileObject file;
-        private ImmutableList<String> lines;
+        private List<String> lines;
 
         LinesInFile(JavaFileObject file) {
             this.file = file;
@@ -433,13 +432,9 @@ public final class CompilationSubject extends Subject {
         }
 
         /** Returns the lines in the file. */
-        ImmutableList<String> linesInFile() {
+        List<String> linesInFile() {
             if (lines == null) {
-                try {
-                    lines = JavaFileObjects.asByteSource(file).asCharSource(UTF_8).readLines();
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                }
+                lines = new String(JavaFileObjects.asBytes(file), UTF_8).lines().collect(toList());
             }
             return lines;
         }

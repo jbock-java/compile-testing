@@ -19,7 +19,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.io.ByteSource;
 import com.google.common.truth.FailureMetadata;
 import com.google.common.truth.Subject;
 import com.google.testing.compile.CompilationSubject.DiagnosticAtColumn;
@@ -333,15 +332,11 @@ public final class JavaSourcesSubject extends Subject
         }
 
         boolean wasGenerated(JavaFileObject expected) {
-            ByteSource expectedByteSource = JavaFileObjects.asByteSource(expected);
+            byte[] expectedByteSource = JavaFileObjects.asBytes(expected);
             for (JavaFileObject generated : compilation.generatedFiles()) {
-                try {
-                    if (generated.getKind().equals(expected.getKind())
-                            && expectedByteSource.contentEquals(JavaFileObjects.asByteSource(generated))) {
-                        return true;
-                    }
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+                if (generated.getKind().equals(expected.getKind())
+                        && Arrays.equals(expectedByteSource, JavaFileObjects.asBytes(generated))) {
+                    return true;
                 }
             }
             return false;

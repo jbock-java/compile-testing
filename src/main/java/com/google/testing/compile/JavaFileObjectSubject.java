@@ -21,16 +21,14 @@ import com.google.common.truth.StringSubject;
 import com.google.common.truth.Subject;
 
 import javax.tools.JavaFileObject;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 
 import static com.google.common.truth.Fact.fact;
 import static com.google.common.truth.Truth.assertAbout;
-import static com.google.testing.compile.JavaFileObjects.asByteSource;
+import static com.google.testing.compile.JavaFileObjects.asBytes;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /** Assertions about {@link JavaFileObject}s. */
@@ -73,40 +71,21 @@ public final class JavaFileObjectSubject extends Subject {
         }
 
         JavaFileObject otherFile = (JavaFileObject) other;
-        try {
-            if (!asByteSource(actual).contentEquals(asByteSource(otherFile))) {
-                failWithActual("expected to be equal to", other);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        if (!Arrays.equals(asBytes(actual), asBytes(otherFile))) {
+            failWithActual("expected to be equal to", other);
         }
     }
 
     /** Asserts that the actual file's contents are equal to {@code expected}. */
     public void hasContents(byte[] expected) {
-        byte[] actualBytes = getBytes(actual);
+        byte[] actualBytes = JavaFileObjects.asBytes(actual);
         if (!Arrays.equals(actualBytes, expected)) {
             failWithActual("expected to have contents", expected);
         }
     }
 
     public void hasContents(JavaFileObject javaFileObject) {
-        hasContents(getBytes(javaFileObject));
-    }
-
-    private static byte[] getBytes(JavaFileObject javaFileObject) {
-        try (InputStream is = javaFileObject.openInputStream()) {
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            int nRead;
-            byte[] data = new byte[16384];
-            while ((nRead = is.read(data, 0, data.length)) != -1) {
-                buffer.write(data, 0, nRead);
-            }
-            return buffer.toByteArray();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
+        hasContents(JavaFileObjects.asBytes(javaFileObject));
     }
 
     /**
@@ -114,12 +93,8 @@ public final class JavaFileObjectSubject extends Subject {
      * a string.
      */
     public StringSubject contentsAsString(Charset charset) {
-        try {
-            return check("contents()")
-                    .that(JavaFileObjects.asByteSource(actual).asCharSource(charset).read());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return check("contents()")
+                .that(new String(JavaFileObjects.asBytes(actual), charset));
     }
 
     /**
@@ -127,12 +102,8 @@ public final class JavaFileObjectSubject extends Subject {
      * a list of lines.
      */
     public IterableSubject contentsAsIterable(Charset charset) {
-        try {
-            return check("contents()")
-                    .that(Arrays.asList(JavaFileObjects.asByteSource(actual).asCharSource(charset).read().split("\\R")));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return check("contents()")
+                .that(Arrays.asList(new String(JavaFileObjects.asBytes(actual), charset).split("\\R")));
     }
 
     /**
