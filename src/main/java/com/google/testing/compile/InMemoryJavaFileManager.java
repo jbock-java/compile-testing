@@ -15,10 +15,6 @@
  */
 package com.google.testing.compile;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-
 import javax.tools.FileObject;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
@@ -39,6 +35,7 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -53,15 +50,7 @@ import static com.google.common.collect.MoreCollectors.toOptional;
  */
 // TODO(gak): under java 1.7 this could all be done with a PathFileManager
 final class InMemoryJavaFileManager extends ForwardingStandardJavaFileManager {
-    private final LoadingCache<URI, JavaFileObject> inMemoryOutputs =
-            CacheBuilder.newBuilder()
-                    .build(
-                            new CacheLoader<URI, JavaFileObject>() {
-                                @Override
-                                public JavaFileObject load(URI key) {
-                                    return new InMemoryJavaFileObject(key);
-                                }
-                            });
+    private final Map<URI, JavaFileObject> inMemoryOutputs = new LinkedHashMap<>();
 
     private final Map<URI, JavaFileObject> inMemoryInputs = new HashMap<>();
 
@@ -96,7 +85,7 @@ final class InMemoryJavaFileManager extends ForwardingStandardJavaFileManager {
     public FileObject getFileForInput(
             Location location, String packageName, String relativeName) throws IOException {
         if (location.isOutputLocation()) {
-            return inMemoryOutputs.getIfPresent(uriForFileObject(location, packageName, relativeName));
+            return inMemoryOutputs.get(uriForFileObject(location, packageName, relativeName));
         }
         Optional<JavaFileObject> inMemoryInput = findInMemoryInput(packageName, relativeName);
         if (inMemoryInput.isPresent()) {
@@ -109,7 +98,7 @@ final class InMemoryJavaFileManager extends ForwardingStandardJavaFileManager {
     public JavaFileObject getJavaFileForInput(
             Location location, String className, Kind kind) throws IOException {
         if (location.isOutputLocation()) {
-            return inMemoryOutputs.getIfPresent(uriForJavaFileObject(location, className, kind));
+            return inMemoryOutputs.get(uriForJavaFileObject(location, className, kind));
         }
         Optional<JavaFileObject> inMemoryInput = findInMemoryInput(className);
         if (inMemoryInput.isPresent()) {
@@ -138,21 +127,21 @@ final class InMemoryJavaFileManager extends ForwardingStandardJavaFileManager {
 
     @Override
     public FileObject getFileForOutput(Location location, String packageName,
-                                       String relativeName, FileObject sibling) throws IOException {
+                                       String relativeName, FileObject sibling) {
         URI uri = uriForFileObject(location, packageName, relativeName);
-        return inMemoryOutputs.getUnchecked(uri);
+        return inMemoryOutputs.computeIfAbsent(uri, InMemoryJavaFileObject::new);
     }
 
     @Override
     public JavaFileObject getJavaFileForOutput(Location location, String className, final Kind kind,
-                                               FileObject sibling) throws IOException {
+                                               FileObject sibling) {
         URI uri = uriForJavaFileObject(location, className, kind);
-        return inMemoryOutputs.getUnchecked(uri);
+        return inMemoryOutputs.computeIfAbsent(uri, InMemoryJavaFileObject::new);
     }
 
     List<JavaFileObject> getGeneratedSources() {
         List<JavaFileObject> result = new ArrayList<>();
-        for (Map.Entry<URI, JavaFileObject> entry : inMemoryOutputs.asMap().entrySet()) {
+        for (Map.Entry<URI, JavaFileObject> entry : inMemoryOutputs.entrySet()) {
             if (entry.getKey().getPath().startsWith("/" + StandardLocation.SOURCE_OUTPUT.name())
                     && (entry.getValue().getKind() == Kind.SOURCE)) {
                 result.add(entry.getValue());
@@ -162,7 +151,7 @@ final class InMemoryJavaFileManager extends ForwardingStandardJavaFileManager {
     }
 
     List<JavaFileObject> getOutputFiles() {
-        return List.copyOf(inMemoryOutputs.asMap().values());
+        return List.copyOf(inMemoryOutputs.values());
     }
 
     /** Adds files that should be available in the source path. */
@@ -191,7 +180,7 @@ final class InMemoryJavaFileManager extends ForwardingStandardJavaFileManager {
         }
 
         @Override
-        public OutputStream openOutputStream() throws IOException {
+        public OutputStream openOutputStream() {
             return new ByteArrayOutputStream() {
                 @Override
                 public void close() throws IOException {
@@ -222,7 +211,7 @@ final class InMemoryJavaFileManager extends ForwardingStandardJavaFileManager {
         }
 
         @Override
-        public Writer openWriter() throws IOException {
+        public Writer openWriter() {
             return new StringWriter() {
                 @Override
                 public void close() throws IOException {
