@@ -4,7 +4,7 @@ This is a fork of [compile-testing](https://github.com/google/compile-testing)
 but with a `module-info.java` and a gradle build.
 * requires Java 11
 * does not use Sun APIs
-* JUnit 5 (Jupiter) dependency rather than JUnit 4
+* JUnit 5 Jupiter
 * since Version `0.19.11` it contains [Kiskae's CompileTestingExtension](https://github.com/Kiskae/compile-testing-extension/), instead of CompilationRule
 * no guava dependency
 
