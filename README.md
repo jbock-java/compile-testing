@@ -12,6 +12,6 @@ This is a fork of [compile-testing](https://github.com/google/compile-testing) w
 Method `containsElementsIn(JavaFileObject)` in JavaFileObjectSubject was using internal sun APIs and had to be marked as deprecated. 
 It throws `UnsupportedOperationException` now.
 
-The new method `containsLines(JavaFileObject)` do not compile the expectation, but do string comparison
-on its contents. It is an acceptable alternative but you may have to reformat the expectation.
+The new method `containsLines(JavaFileObject)` does not compile the expectation, but instead it does string comparison
+on the contents of the JavaFileObject. It is an acceptable alternative but you may have to do some reformatting to migrate get existing tests.
 
