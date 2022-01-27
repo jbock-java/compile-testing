@@ -5,5 +5,5 @@ module com.google.testing.compile {
     requires com.google.auto.value;
     requires org.junit.jupiter.api;
 
-    exports com.google.testing.compile;
+    exports io.jbock.testing.compile;
 }
