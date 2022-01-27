@@ -15,8 +15,8 @@
  */
 package io.jbock.testing.compile;
 
-import com.google.common.truth.FailureMetadata;
-import com.google.common.truth.Subject;
+import io.jbock.common.truth.FailureMetadata;
+import io.jbock.common.truth.Subject;
 
 import javax.tools.JavaFileObject;
 

@@ -15,10 +15,10 @@
  */
 package io.jbock.testing.compile;
 
-import com.google.common.truth.Fact;
-import com.google.common.truth.FailureMetadata;
-import com.google.common.truth.Subject;
-import com.google.common.truth.Truth;
+import io.jbock.common.truth.Fact;
+import io.jbock.common.truth.FailureMetadata;
+import io.jbock.common.truth.Subject;
+import io.jbock.common.truth.Truth;
 
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileManager.Location;
@@ -37,9 +37,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static com.google.common.truth.Fact.fact;
-import static com.google.common.truth.Fact.simpleFact;
-import static com.google.common.truth.Truth.assertAbout;
+import static io.jbock.common.truth.Fact.fact;
+import static io.jbock.common.truth.Fact.simpleFact;
+import static io.jbock.common.truth.Truth.assertAbout;
 import static io.jbock.testing.compile.Compilation.Status.FAILURE;
 import static io.jbock.testing.compile.Compilation.Status.SUCCESS;
 import static io.jbock.testing.compile.JavaFileObjectSubject.javaFileObjects;

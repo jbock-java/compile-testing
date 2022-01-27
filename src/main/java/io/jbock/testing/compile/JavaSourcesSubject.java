@@ -15,8 +15,8 @@
  */
 package io.jbock.testing.compile;
 
-import com.google.common.truth.FailureMetadata;
-import com.google.common.truth.Subject;
+import io.jbock.common.truth.FailureMetadata;
+import io.jbock.common.truth.Subject;
 import io.jbock.testing.compile.CompilationSubject.DiagnosticAtColumn;
 import io.jbock.testing.compile.CompilationSubject.DiagnosticInFile;
 import io.jbock.testing.compile.CompilationSubject.DiagnosticOnLine;
@@ -35,8 +35,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.google.common.truth.Fact.simpleFact;
-import static com.google.common.truth.Truth.assertAbout;
+import static io.jbock.common.truth.Fact.simpleFact;
+import static io.jbock.common.truth.Truth.assertAbout;
 import static io.jbock.testing.compile.CompilationSubject.compilations;
 import static io.jbock.testing.compile.Compiler.javac;
 import static io.jbock.testing.compile.JavaSourcesSubjectFactory.javaSources;

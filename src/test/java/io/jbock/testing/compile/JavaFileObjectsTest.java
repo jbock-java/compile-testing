@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 
-import static com.google.common.truth.Truth.assertThat;
+import static io.jbock.common.truth.Truth.assertThat;
 import static javax.tools.JavaFileObject.Kind.CLASS;
 import static org.junit.jupiter.api.Assertions.fail;
 

@@ -1,11 +1,11 @@
 package io.jbock.testing.compile;
 
-import com.google.common.truth.Truth;
+import io.jbock.common.truth.Truth;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static com.google.common.truth.ExpectFailure.assertThat;
-import static com.google.common.truth.Truth.assertAbout;
+import static io.jbock.common.truth.ExpectFailure.assertThat;
+import static io.jbock.common.truth.Truth.assertAbout;
 import static io.jbock.testing.compile.CompilationSubject.compilations;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static javax.tools.StandardLocation.CLASS_OUTPUT;

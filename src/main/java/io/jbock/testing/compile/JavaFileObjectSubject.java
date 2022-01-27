@@ -15,10 +15,10 @@
  */
 package io.jbock.testing.compile;
 
-import com.google.common.truth.FailureMetadata;
-import com.google.common.truth.IterableSubject;
-import com.google.common.truth.StringSubject;
-import com.google.common.truth.Subject;
+import io.jbock.common.truth.FailureMetadata;
+import io.jbock.common.truth.IterableSubject;
+import io.jbock.common.truth.StringSubject;
+import io.jbock.common.truth.Subject;
 
 import javax.tools.JavaFileObject;
 import java.io.IOException;
@@ -26,8 +26,8 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.google.common.truth.Fact.fact;
-import static com.google.common.truth.Truth.assertAbout;
+import static io.jbock.common.truth.Fact.fact;
+import static io.jbock.common.truth.Truth.assertAbout;
 import static io.jbock.testing.compile.JavaFileObjects.asBytes;
 import static java.nio.charset.StandardCharsets.UTF_8;
 

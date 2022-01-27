@@ -1,6 +1,6 @@
 package io.jbock.testing.compile;
 
-import com.google.common.truth.Truth;
+import io.jbock.common.truth.Truth;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -11,8 +11,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import static com.google.common.truth.Truth.assertAbout;
-import static com.google.common.truth.Truth.assertThat;
+import static io.jbock.common.truth.Truth.assertAbout;
+import static io.jbock.common.truth.Truth.assertThat;
 import static io.jbock.testing.compile.CompilationSubject.assertThat;
 import static io.jbock.testing.compile.CompilationSubject.compilations;
 import static java.lang.String.format;

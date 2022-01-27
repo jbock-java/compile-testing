@@ -23,9 +23,9 @@ import javax.tools.JavaFileObject;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.google.common.truth.ExpectFailure.assertThat;
-import static com.google.common.truth.Truth.assertAbout;
-import static com.google.common.truth.Truth.assertThat;
+import static io.jbock.common.truth.ExpectFailure.assertThat;
+import static io.jbock.common.truth.Truth.assertAbout;
+import static io.jbock.common.truth.Truth.assertThat;
 import static io.jbock.testing.compile.JavaSourceSubjectFactory.javaSource;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static javax.tools.StandardLocation.CLASS_OUTPUT;

@@ -47,7 +47,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import static com.google.common.truth.Truth.assertThat;
+import static io.jbock.common.truth.Truth.assertThat;
 import static io.jbock.testing.compile.CompilationSubject.assertThat;
 import static io.jbock.testing.compile.Compiler.javac;
 import static java.nio.charset.StandardCharsets.UTF_8;

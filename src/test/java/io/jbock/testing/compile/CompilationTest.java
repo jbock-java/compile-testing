@@ -16,12 +16,12 @@
 
 package io.jbock.testing.compile;
 
-import com.google.common.truth.Truth;
+import io.jbock.common.truth.Truth;
 import org.junit.jupiter.api.Test;
 
 import javax.tools.JavaFileObject;
 
-import static com.google.common.truth.Truth.assertThat;
+import static io.jbock.common.truth.Truth.assertThat;
 import static io.jbock.testing.compile.CompilationSubject.assertThat;
 import static io.jbock.testing.compile.Compiler.javac;
 import static javax.tools.StandardLocation.SOURCE_OUTPUT;

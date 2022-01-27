@@ -18,7 +18,7 @@ package io.jbock.testing.compile;
 import io.jbock.testing.compile.TypeEnumerator;
 import org.junit.jupiter.api.Test;
 
-import static com.google.common.truth.Truth.assertThat;
+import static io.jbock.common.truth.Truth.assertThat;
 
 /**
  * Unit test for {@link TypeEnumerator}

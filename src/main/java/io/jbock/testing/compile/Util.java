@@ -37,6 +37,7 @@ class Util {
         result.addAll(set2);
         return result;
     }
+
     static <E> E getOnlyElement(Collection<E> collection) {
         if (collection.isEmpty()) {
             throw new IllegalArgumentException("Expecting exactly one element but found empty list");

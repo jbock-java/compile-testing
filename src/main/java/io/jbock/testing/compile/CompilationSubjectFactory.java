@@ -15,9 +15,9 @@
  */
 package io.jbock.testing.compile;
 
-import com.google.common.truth.FailureMetadata;
-import com.google.common.truth.Subject;
-import com.google.common.truth.Truth;
+import io.jbock.common.truth.FailureMetadata;
+import io.jbock.common.truth.Subject;
+import io.jbock.common.truth.Truth;
 
 /** A {@link Truth} subject factory for a {@link Compilation}. */
 final class CompilationSubjectFactory implements Subject.Factory<CompilationSubject, Compilation> {

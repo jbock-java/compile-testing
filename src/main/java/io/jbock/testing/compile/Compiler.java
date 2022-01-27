@@ -236,7 +236,7 @@ public abstract class Compiler {
                 ;
              currentClassloader = currentClassloader.getParent()) {
             if (currentClassloader == systemClassLoader) {
-                Collections.addAll(classpaths, System.getProperty("java.class.path").split("[" + System.getProperty("path.separator") +  "]", -1));
+                Collections.addAll(classpaths, System.getProperty("java.class.path").split("[" + System.getProperty("path.separator") + "]", -1));
                 break;
             }
             if (currentClassloader == platformClassLoader) {
